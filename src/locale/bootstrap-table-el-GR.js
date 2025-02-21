@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['el-GR'] = $.fn.bootstrapTable.locales['el'] = {
   formatRefresh () {
     return 'Refresh'
   },
-  formatToggle () {
-    return 'Toggle'
-  },
   formatToggleOn () {
     return 'Show card view'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['el-GR'] = $.fn.bootstrapTable.locales['el'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['el-GR'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['el-GR'])

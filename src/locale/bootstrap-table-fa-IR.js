@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['fa-IR'] = $.fn.bootstrapTable.locales['fa'] = {
   formatRefresh () {
     return 'به روز رسانی'
   },
-  formatToggle () {
-    return 'تغییر نمایش'
-  },
   formatToggleOn () {
     return 'Show card view'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['fa-IR'] = $.fn.bootstrapTable.locales['fa'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['fa-IR'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['fa-IR'])

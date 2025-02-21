@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['sv-SE'] = $.fn.bootstrapTable.locales['sv'] = {
   formatRefresh () {
     return 'Uppdatera'
   },
-  formatToggle () {
-    return 'Skifta'
-  },
   formatToggleOn () {
     return 'Show card view'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['sv-SE'] = $.fn.bootstrapTable.locales['sv'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['sv-SE'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['sv-SE'])

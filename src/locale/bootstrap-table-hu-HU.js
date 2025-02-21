@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['hu-HU'] = $.fn.bootstrapTable.locales['hu'] = {
   formatRefresh () {
     return 'Frissítés'
   },
-  formatToggle () {
-    return 'Összecsuk/Kinyit'
-  },
   formatToggleOn () {
     return 'Show card view'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['hu-HU'] = $.fn.bootstrapTable.locales['hu'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['hu-HU'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['hu-HU'])

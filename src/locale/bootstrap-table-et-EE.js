@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['et-EE'] = $.fn.bootstrapTable.locales['et'] = {
   formatRefresh () {
     return 'Värskenda'
   },
-  formatToggle () {
-    return 'Lülita'
-  },
   formatToggleOn () {
     return 'Show card view'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['et-EE'] = $.fn.bootstrapTable.locales['et'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['et-EE'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['et-EE'])

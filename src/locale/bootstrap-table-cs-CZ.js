@@ -57,9 +57,6 @@ $.fn.bootstrapTable.locales['cs-CZ'] = $.fn.bootstrapTable.locales['cs'] = {
   formatRefresh () {
     return 'Aktualizovat'
   },
-  formatToggle () {
-    return 'Přepni'
-  },
   formatToggleOn () {
     return 'Zobrazit karty'
   },
@@ -104,4 +101,4 @@ $.fn.bootstrapTable.locales['cs-CZ'] = $.fn.bootstrapTable.locales['cs'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['cs-CZ'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['cs-CZ'])

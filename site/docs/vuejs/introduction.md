@@ -8,13 +8,13 @@ redirect_from:
 toc: true
 ---
 
-We have a Bootstrap Table Component for [Vue.js 2.0+](https://vuejs.org), and it should be able to work with the full [API](/docs/api/), the full [extensions](/extensions/) and the full [CSS frameworks](/themes/).
+We have a Bootstrap Table Component for [Vue.js 3.0+](https://vuejs.org), and it should be able to work with the full [API](/docs/api/), the full [extensions](/extensions/) and the full [CSS frameworks](/themes/).
 
 ## Installation
 
 ### Dependencies
 
-* [Vue.js](https://vuejs.org) (2.0+)
+* [Vue.js](https://vuejs.org) (3.0+)
 * [jQuery](http://jquery.com)
 
 ### NPM
@@ -27,10 +27,10 @@ npm install bootstrap-table
 
 ### UNPKG
 
-The folks over at [UNPKG](https://unpkg.com/bootstrap-table@{{ site.current_version }}/dist/) graciously provide CDN support for CSS and JavaScript of Bootstrap table. Just use these links.
+The folks over at [UNPKG](https://cdn.jsdelivr.net/npm/bootstrap-table@{{ site.current_version }}/dist/) graciously provide CDN support for CSS and JavaScript of Bootstrap table. Just use these links.
 
 {% highlight html %}
-https://unpkg.com/bootstrap-table@{{ site.current_version }}
+https://cdn.jsdelivr.net/npm/bootstrap-table@{{ site.current_version }}
 {% endhighlight %}
 
 ## Build Files
@@ -41,10 +41,8 @@ https://unpkg.com/bootstrap-table@{{ site.current_version }}
 bootstrap-table/
 └── dist/
     ├── bootstrap-table-vue.js
-    ├── bootstrap-table-vue.min.js
-    ├── bootstrap-table-vue.esm.js
-    └── bootstrap-table-vue.esm.min.js
+    └── bootstrap-table-vue.umd.js
 {% endhighlight %}
 
-* **bootstrap-table-vue.js:** UMD builds can be used directly in the browser via a `<script>` tag.
-* **bootstrap-table-vue.esm.js** ES module builds are intended for use with modern bundlers like [webpack 2](https://webpack.js.org/) or [rollup](http://rollupjs.org/).
+* **bootstrap-table-vue.js:** ES module builds are intended for use with modern bundlers like [webpack](https://webpack.js.org/) or [vitejs](http://vitejs.dev/).
+* **bootstrap-table-vue.umd.js** UMD builds can be used directly in the browser via a `<script>` tag.

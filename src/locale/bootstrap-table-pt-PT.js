@@ -1,6 +1,7 @@
 /**
  * Bootstrap Table Portuguese Portugal Translation
  * Author: Burnspirit<burnspirit@gmail.com>
+ * Update: @misteregis <misteregis@gmail.com>
  */
 
 $.fn.bootstrapTable.locales['pt-PT'] = $.fn.bootstrapTable.locales['pt'] = {
@@ -17,11 +18,13 @@ $.fn.bootstrapTable.locales['pt-PT'] = $.fn.bootstrapTable.locales['pt'] = {
     return `${pageNumber} registos por página`
   },
   formatShowingRows (pageFrom, pageTo, totalRows, totalNotFiltered) {
+    const plural = totalRows > 1 ? 's' : ''
+
     if (totalNotFiltered !== undefined && totalNotFiltered > 0 && totalNotFiltered > totalRows) {
-      return `A mostrar ${pageFrom} at&eacute; ${pageTo} de ${totalRows} linhas (filtered from ${totalNotFiltered} total rows)`
+      return `A mostrar ${pageFrom} at&eacute; ${pageTo} de ${totalRows} linha${plural} (filtrado de um total de ${totalNotFiltered} linha${plural})`
     }
 
-    return `A mostrar ${pageFrom} até ${pageTo} de ${totalRows} linhas`
+    return `A mostrar ${pageFrom} até ${pageTo} de ${totalRows} linha${plural}`
   },
   formatSRPaginationPreText () {
     return 'página anterior'
@@ -33,7 +36,7 @@ $.fn.bootstrapTable.locales['pt-PT'] = $.fn.bootstrapTable.locales['pt'] = {
     return 'próxima página'
   },
   formatDetailPagination (totalRows) {
-    return `Mostrando ${totalRows} linhas`
+    return `Mostrando ${totalRows} linha${totalRows > 1 ? 's' : ''}`
   },
   formatClearSearch () {
     return 'Limpar Pesquisa'
@@ -56,14 +59,11 @@ $.fn.bootstrapTable.locales['pt-PT'] = $.fn.bootstrapTable.locales['pt'] = {
   formatRefresh () {
     return 'Actualizar'
   },
-  formatToggle () {
-    return 'Alternar'
-  },
   formatToggleOn () {
-    return 'Show card view'
+    return 'Mostrar vista em forma de cartão'
   },
   formatToggleOff () {
-    return 'Hide card view'
+    return 'Esconder vista em forma de cartão'
   },
   formatColumns () {
     return 'Colunas'
@@ -93,14 +93,53 @@ $.fn.bootstrapTable.locales['pt-PT'] = $.fn.bootstrapTable.locales['pt'] = {
     return 'Fechar'
   },
   formatFilterControlSwitch () {
-    return 'Esconder/Exibir controlos'
+    return 'Ocultar/Exibir controles'
   },
   formatFilterControlSwitchHide () {
     return 'Esconder controlos'
   },
   formatFilterControlSwitchShow () {
     return 'Exibir controlos'
+  },
+  formatAddLevel () {
+    return 'Adicionar nível'
+  },
+  formatCancel () {
+    return 'Cancelar'
+  },
+  formatColumn () {
+    return 'Coluna'
+  },
+  formatDeleteLevel () {
+    return 'Remover nível'
+  },
+  formatDuplicateAlertTitle () {
+    return 'Foram encontradas entradas duplicadas!'
+  },
+  formatDuplicateAlertDescription () {
+    return 'Por favor, remova ou altere as colunas duplicadas'
+  },
+  formatMultipleSort () {
+    return 'Ordenação múltipla'
+  },
+  formatOrder () {
+    return 'Ordem'
+  },
+  formatSort () {
+    return 'Ordenar'
+  },
+  formatSortBy () {
+    return 'Ordenar por'
+  },
+  formatThenBy () {
+    return 'em seguida'
+  },
+  formatSortOrders () {
+    return {
+      asc: 'Ascendente',
+      desc: 'Descendente'
+    }
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['pt-PT'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['pt-PT'])

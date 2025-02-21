@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['ja-JP'] = $.fn.bootstrapTable.locales['ja'] = {
   formatRefresh () {
     return '更新'
   },
-  formatToggle () {
-    return 'トグル'
-  },
   formatToggleOn () {
     return 'Show card view'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['ja-JP'] = $.fn.bootstrapTable.locales['ja'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ja-JP'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ja-JP'])

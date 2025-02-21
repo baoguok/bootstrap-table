@@ -177,7 +177,7 @@ The column options is defined in `jQuery.fn.bootstrapTable.columnDefaults`.
 
   Example code:
 
-   {% highlight html %}
+  {% highlight html %}
   <th .. data-events="operateEvent">
   var operateEvents = {
     'click .like': function (e, value, row, index) {}
@@ -230,13 +230,40 @@ The column options is defined in `jQuery.fn.bootstrapTable.columnDefaults`.
   * `data`: Array of all the data rows.
   * `value`: If footer data is set, the value of the footer column.
 
-  The function should return a string with the text to show in the footer cell.
+  The expected return data type is `jQuery`, `String` or `HTMLElement`. Other types will be forced to the `String` type.
 
   If you fetch data from a server and set the footer value from the server response, please use the `footerField` Option.
 
 - **Default:** `undefined`
 
 - **Example:** [Footer Formatter](https://examples.bootstrap-table.com/#column-options/footer-formatter.html)
+
+## footerStyle
+
+- **Attribute:** `data-footer-style`
+
+- **Type:** `Function`
+
+- **Detail:**
+
+  The footer style formatter function, takes one parameter:
+
+  * `column`: the column object.
+
+  Support `classes` or `css`. Example usage:
+
+  {% highlight javascript %}
+  function footerStyle(column) {
+    return {
+      css: { 'font-weight': 'normal' },
+      classes: 'my-class'
+    }
+  }
+  {% endhighlight %}
+
+- **Default:** `{}`
+
+- **Example:** [Footer Style](https://examples.bootstrap-table.com/#options/footer-style.html)
 
 ## formatter
 
@@ -254,6 +281,8 @@ The column options is defined in `jQuery.fn.bootstrapTable.columnDefaults`.
   * `row`: the row record data.
   * `index`: the row index.
   * `field`: the row field.
+
+  The expected return data type is `jQuery`, `String` or `HTMLElement`. Other types will be forced to the `String` type.
 
 - **Default:** `undefined`
 
@@ -436,6 +465,21 @@ The column options is defined in `jQuery.fn.bootstrapTable.columnDefaults`.
 - **Default:** `true`
 
 - **Example:** [Column Switchable](https://examples.bootstrap-table.com/#column-options/switchable.html)
+
+## switchableLabel
+
+- **Attribute:** `data-switchable-label`
+
+- **Type:** `String`
+
+- **Detail:**
+
+  The label of the switchable column in the dropdown. If not specified uses the column title.
+
+- **Default:** `undefined`
+
+- **Example:** [Column Switchable](https://examples.bootstrap-table.com/#column-options/switchable.html)
+
 
 ## title
 

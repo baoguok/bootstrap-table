@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['ru-RU'] = $.fn.bootstrapTable.locales['ru'] = {
   formatRefresh () {
     return 'Обновить'
   },
-  formatToggle () {
-    return 'Переключить'
-  },
   formatToggleOn () {
     return 'Показать записи в виде карточек'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['ru-RU'] = $.fn.bootstrapTable.locales['ru'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ru-RU'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ru-RU'])

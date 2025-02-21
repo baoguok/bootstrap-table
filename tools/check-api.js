@@ -1,8 +1,7 @@
-// eslint-disable-next-line no-global-assign
-require = require('esm')(module)
-const fs = require('fs')
-const chalk = require('chalk')
-const Constants = require('../src/constants/index.js').default
+import fs from 'fs'
+import chalk from 'chalk'
+import Constants from '../src/constants/index.js'
+
 let errorSum = 0
 const exampleFilesFolder = './bootstrap-table-examples/'
 const exampleFilesFound = fs.existsSync(exampleFilesFolder)
@@ -45,7 +44,18 @@ class API {
       md[item.split('\n')[0]] = item
     }
 
-    const mds = Object.keys(md)
+    console.log('-------------------------')
+    console.log(`Checking file: ${file}`)
+    console.log('-------------------------')
+
+    const noDefaults = Object.keys(md).filter(it => !this.options.includes(it))
+
+    if (noDefaults.length) {
+      errorSum += noDefaults.length
+      console.log(chalk.red(`No default option was found for "${noDefaults.join(', ')}", should the documentation be removed!`))
+      return
+    }
+
     for (const [i, key] of this.options.entries()) {
       try {
         if (md[key]) {
@@ -93,14 +103,11 @@ class API {
 
     errorSum += errors.length
     if (errors.length > 0) {
-      console.log('-------------------------')
-      console.log(`Checking file: ${file}`)
-      console.log('-------------------------')
-
       errors.forEach((error) => {
         console.log(error)
       })
     }
+
     fs.writeFileSync(file, outLines.join('## '))
   }
 }

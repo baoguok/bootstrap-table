@@ -12,7 +12,7 @@ Events can be bound in two ways:
 
 Binding via the options object:
 {% highlight html %}
-// Here, you can expect to have as the last parameter the boostrap-table object
+// Here, you can expect to have as the last parameter the bootstrap-table object
 
 $('#table').bootstrapTable({
   onEventName: function (arg1, arg2, ...) {
@@ -23,7 +23,7 @@ $('#table').bootstrapTable({
 
 Binding via the jquery event handler:
 {% highlight html %}
-// Here, you can expect to have in the 'e' variable the sender property, which is the boostrap-table object
+// Here, you can expect to have in the 'e' variable the sender property, which is the bootstrap-table object
 
 $('#table').on('event-name.bs.table', function (e, arg1, arg2, ...) {
   // ...
@@ -40,7 +40,7 @@ $('#table').on('event-name.bs.table', function (e, arg1, arg2, ...) {
 
 - **Detail:**
 
-  It fires when all events trigger. The parameters contain:
+  It fires when any event triggers. The parameters contain:
 
   * `name`: the event name,
   * `args`: the event data.
@@ -147,7 +147,7 @@ $('#table').on('event-name.bs.table', function (e, arg1, arg2, ...) {
 
 - **Detail:**
 
-  It fires when toogle all columns. The parameters contain:
+  It fires when toggle all columns. The parameters contain:
 
   * `checked`: the checked state of the column.
 
@@ -217,7 +217,7 @@ $('#table').on('event-name.bs.table', function (e, arg1, arg2, ...) {
 
   It fires when remote data is loaded successfully. The parameters contain:
 
-  * `data`: the remote data.
+  * `data`: the remote data loaded into the table. (Note: this data cannot be modified once it’s loaded into the table. If you need to process received data before using it in the table, write your custom [responseHandler](/docs/api/table-options/#responsehandler) instead.)
   * `status`: the status code of `jqXHR`.
   * `jqXHR`: jqXHR object, which is a super set of the XMLHTTPRequest object. For more information, see the [jqXHR Type](http://api.jquery.com/Types/#jqXHR).
 

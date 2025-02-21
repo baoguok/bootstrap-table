@@ -6,7 +6,7 @@
 
 const Utils = $.fn.bootstrapTable.utils
 
-$.extend($.fn.bootstrapTable.defaults, {
+Object.assign($.fn.bootstrapTable.defaults, {
   stickyHeader: false,
   stickyHeaderOffsetY: 0,
   stickyHeaderOffsetLeft: 0,
@@ -16,7 +16,6 @@ $.extend($.fn.bootstrapTable.defaults, {
 $.BootstrapTable = class extends $.BootstrapTable {
   initHeader (...args) {
     super.initHeader(...args)
-
     if (!this.options.stickyHeader) {
       return
     }
@@ -46,11 +45,18 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
   onColumnSearch ({ currentTarget, keyCode }) {
     super.onColumnSearch({ currentTarget, keyCode })
+    if (!this.options.stickyHeader) {
+      return
+    }
+
     this.renderStickyHeader()
   }
 
   resetView (...args) {
     super.resetView(...args)
+    if (!this.options.stickyHeader) {
+      return
+    }
 
     $('.bootstrap-table.fullscreen').off('scroll')
       .on('scroll', () => this.renderStickyHeader())
@@ -58,6 +64,9 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
   getCaret (...args) {
     super.getCaret(...args)
+    if (!this.options.stickyHeader) {
+      return
+    }
 
     if (this.$stickyHeader) {
       const $ths = this.$stickyHeader.find('th')
@@ -70,6 +79,10 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
   horizontalScroll () {
     super.horizontalScroll()
+    if (!this.options.stickyHeader) {
+      return
+    }
+
     this.$tableBody.on('scroll', () => this.matchPositionX())
   }
 
@@ -83,7 +96,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
         const $target = $(e.target)
         const value = $target.val()
         const field = $target.parents('th').data('field')
-        const $coreTh = that.$header.find(`th[data-field="${ field }"]`)
+        const $coreTh = that.$header.find(`th[data-field="${field}"]`)
 
         if ($target.is('input')) {
           $coreTh.find('input').val(value)
@@ -91,7 +104,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
           const $select = $coreTh.find('select')
 
           $select.find('option[selected]').removeAttr('selected')
-          $select.find(`option[value="${ value }"]`).attr('selected', true)
+          $select.find(`option[value="${value}"]`).attr('selected', true)
         }
 
         that.triggerSearch()
@@ -108,10 +121,8 @@ $.BootstrapTable = class extends $.BootstrapTable {
     if (top > start && top <= end) {
       // ensure clone and source column widths are the same
       this.$stickyHeader.find('tr').each((indexRows, rows) => {
-        const columns = $(rows).find('th')
-
-        columns.each((indexColumns, celd) => {
-          $(celd).css('min-width', this.$header.find(`tr:eq(${indexRows})`).find(`th:eq(${indexColumns})`).css('width'))
+        $(rows).find('th').each((index, el) => {
+          $(el).css('min-width', this.$header.find(`tr:eq(${indexRows})`).find(`th:eq(${index})`).css('width'))
         })
       })
       // match bootstrap table style

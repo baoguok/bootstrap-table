@@ -8,7 +8,7 @@ const deepCopy = arg => {
   if (arg === undefined) {
     return arg
   }
-  return $.extend(true, Array.isArray(arg) ? [] : {}, arg)
+  return $.fn.bootstrapTable.utils.extend(true, Array.isArray(arg) ? [] : {}, arg)
 }
 
 export default {
@@ -29,6 +29,11 @@ export default {
       default () {
         return {}
       }
+    }
+  },
+  data () {
+    return {
+      optionsChangedIdx: 0
     }
   },
   mounted () {
@@ -70,15 +75,18 @@ export default {
   watch: {
     options: {
       handler () {
-        this._initTable()
+        this.optionsChangedIdx++
       },
       deep: true
     },
     columns: {
       handler () {
-        this._initTable()
+        this.optionsChangedIdx++
       },
       deep: true
+    },
+    optionsChangedIdx () {
+      this._initTable()
     },
     data: {
       handler () {

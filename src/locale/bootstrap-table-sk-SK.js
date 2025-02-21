@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['sk-SK'] = $.fn.bootstrapTable.locales['sk'] = {
   formatRefresh () {
     return 'Obnoviť'
   },
-  formatToggle () {
-    return 'Prepni'
-  },
   formatToggleOn () {
     return 'Zobraziť kartové zobrazenie'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['sk-SK'] = $.fn.bootstrapTable.locales['sk'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['sk-SK'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['sk-SK'])

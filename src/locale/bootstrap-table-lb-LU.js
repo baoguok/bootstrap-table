@@ -18,10 +18,10 @@ $.fn.bootstrapTable.locales['lb-LU'] = $.fn.bootstrapTable.locales['lb'] = {
   },
   formatShowingRows (pageFrom, pageTo, totalRows, totalNotFiltered) {
     if (totalNotFiltered !== undefined && totalNotFiltered > 0 && totalNotFiltered > totalRows) {
-      return `Weist Zeil ${pageFrom} bis ${pageTo} vun ${totalRows} Zeil${(totalRows > 1) ? 'en' : ''} (gefiltert vun insgesamt ${totalNotFiltered} Zeil${(totalRows > 1) ? 'en' : ''})`
+      return `Weist Zeil ${pageFrom} bis ${pageTo} vun ${totalRows} Zeil${totalRows > 1 ? 'en' : ''} (gefiltert vun insgesamt ${totalNotFiltered} Zeil${totalRows > 1 ? 'en' : ''})`
     }
 
-    return `Weist Zeil ${pageFrom} bis ${pageTo} vun ${totalRows} Zeil${(totalRows > 1) ? 'en' : ''}`
+    return `Weist Zeil ${pageFrom} bis ${pageTo} vun ${totalRows} Zeil${totalRows > 1 ? 'en' : ''}`
   },
   formatSRPaginationPreText () {
     return 'viregt Säit'
@@ -55,9 +55,6 @@ $.fn.bootstrapTable.locales['lb-LU'] = $.fn.bootstrapTable.locales['lb'] = {
   },
   formatRefresh () {
     return 'Nei lueden'
-  },
-  formatToggle () {
-    return 'Ëmschalten'
   },
   formatToggleOn () {
     return 'Kaartenusiicht uweisen'
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['lb-LU'] = $.fn.bootstrapTable.locales['lb'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['lb-LU'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['lb-LU'])

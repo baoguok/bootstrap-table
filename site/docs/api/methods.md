@@ -183,6 +183,16 @@ The calling method syntax: `$('#table').bootstrapTable('method', parameter)`.
 
 - **Example:** [Get Data](https://examples.bootstrap-table.com/#methods/get-data.html)
 
+## getFooterData
+
+- **Parameter:** `undefined`
+
+- **Detail:**
+
+  Get the loaded data of the footer at the moment that this method is called
+
+- **Example:** [Get Footer Data](https://examples.bootstrap-table.com/#methods/get-footer-data.html)
+
 ## getHiddenColumns
 
 - **Parameter:** `undefined`
@@ -509,6 +519,29 @@ The calling method syntax: `$('#table').bootstrapTable('method', parameter)`.
 
 - **Example:** [Show/Hide Row](https://examples.bootstrap-table.com/#methods/show-hide-row.html)
 
+## sortBy
+
+- **Parameter:** `params`
+
+- **Detail:**
+
+  Sorts the table by the specified field. The params must contain at least one of the following properties:
+
+  * `field`: the field name.
+  * `sortOrder`: the sort order, can only be 'asc' or 'desc'.
+
+- **Example:** [Sort By](https://examples.bootstrap-table.com/#methods/sort-by.html)
+
+## sortReset
+
+- **Parameter:** `undefined`
+
+- **Detail:**
+
+  Resets sort state of the table regardless of whether caused by the user or programmatically.
+
+- **Example:** [Sort reset](https://examples.bootstrap-table.com/#methods/sort-reset.html)
+
 ## toggleDetailView
 
 - **Parameter:** `index`
@@ -625,6 +658,8 @@ The calling method syntax: `$('#table').bootstrapTable('method', parameter)`.
   * `field`: field name of the cell to be updated.
   * `value`: the new value of the cell.
 
+  To disable table re-initialization, you can set `{reinit: false}`.
+
 - **Example:** [Update Cell By Unique Id](https://examples.bootstrap-table.com/#methods/update-cell-by-unique-id.html)
 
 ## updateColumnTitle
@@ -649,6 +684,7 @@ The calling method syntax: `$('#table').bootstrapTable('method', parameter)`.
   Update the localizations format text.
 
 - **Example:** [Update Format Text](https://examples.bootstrap-table.com/#methods/update-format-text.html)
+
 ## updateRow
 
 - **Parameter:** `params`

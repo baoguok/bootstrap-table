@@ -57,9 +57,6 @@ $.fn.bootstrapTable.locales['pl-PL'] = $.fn.bootstrapTable.locales['pl'] = {
   formatRefresh () {
     return 'Odśwież'
   },
-  formatToggle () {
-    return 'Przełącz'
-  },
   formatToggleOn () {
     return 'Pokaż układ karty'
   },
@@ -104,4 +101,4 @@ $.fn.bootstrapTable.locales['pl-PL'] = $.fn.bootstrapTable.locales['pl'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['pl-PL'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['pl-PL'])

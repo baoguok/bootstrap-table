@@ -16,10 +16,18 @@ function normalizeWheel (event) {
   let pY = 0 // pixelY
 
   // Legacy
-  if ('detail' in event) { sY = event.detail }
-  if ('wheelDelta' in event) { sY = -event.wheelDelta / 120 }
-  if ('wheelDeltaY' in event) { sY = -event.wheelDeltaY / 120 }
-  if ('wheelDeltaX' in event) { sX = -event.wheelDeltaX / 120 }
+  if ('detail' in event) {
+    sY = event.detail
+  }
+  if ('wheelDelta' in event) {
+    sY = -event.wheelDelta / 120
+  }
+  if ('wheelDeltaY' in event) {
+    sY = -event.wheelDeltaY / 120
+  }
+  if ('wheelDeltaX' in event) {
+    sX = -event.wheelDeltaX / 120
+  }
 
   // side scrolling on FF with DOMMouseScroll
   if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
@@ -30,8 +38,12 @@ function normalizeWheel (event) {
   pX = sX * PIXEL_STEP
   pY = sY * PIXEL_STEP
 
-  if ('deltaY' in event) { pY = event.deltaY }
-  if ('deltaX' in event) { pX = event.deltaX }
+  if ('deltaY' in event) {
+    pY = event.deltaY
+  }
+  if ('deltaX' in event) {
+    pX = event.deltaX
+  }
 
   if ((pX || pY) && event.deltaMode) {
     if (event.deltaMode === 1) { // delta in LINE units
@@ -44,8 +56,12 @@ function normalizeWheel (event) {
   }
 
   // Fall-back if spin cannot be determined
-  if (pX && !sX) { sX = (pX < 1) ? -1 : 1 }
-  if (pY && !sY) { sY = (pY < 1) ? -1 : 1 }
+  if (pX && !sX) {
+    sX = pX < 1 ? -1 : 1
+  }
+  if (pY && !sY) {
+    sY = pY < 1 ? -1 : 1
+  }
 
   return {
     spinX: sX,
@@ -55,7 +71,7 @@ function normalizeWheel (event) {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, {
+Object.assign($.fn.bootstrapTable.defaults, {
   fixedColumns: false,
   fixedNumber: 0,
   fixedRightNumber: 0
@@ -181,7 +197,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       this.$fixedColumns.find('.fixed-table-loading').hide()
     }
 
-    if (this.needFixedColumns && this.options.fixedRightNumber) {
+    if (this.needFixedColumns && this.options.fixedRightNumber && this.$fixedColumnsRight) {
       this.$fixedColumnsRight.find('.fixed-table-loading').hide()
     }
   }
@@ -210,7 +226,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       this.$fixedColumns.html('').css('width', '')
     }
 
-    if (this.needFixedColumns && this.options.fixedRightNumber) {
+    if (this.needFixedColumns && this.options.fixedRightNumber && this.$fixedColumnsRight) {
       this.$fixedHeaderRight = initFixedHeader(this.$fixedColumnsRight, true)
       this.$fixedHeaderRight.scrollLeft(this.$fixedHeaderRight.find('table').width())
     } else if (this.$fixedColumnsRight) {
@@ -249,7 +265,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       this.$fixedBody = initFixedBody(this.$fixedColumns, this.$fixedHeader)
     }
 
-    if (this.needFixedColumns && this.options.fixedRightNumber) {
+    if (this.needFixedColumns && this.options.fixedRightNumber && this.$fixedColumnsRight) {
       this.$fixedBodyRight = initFixedBody(this.$fixedColumnsRight, this.$fixedHeaderRight)
       this.$fixedBodyRight.scrollLeft(this.$fixedBodyRight.find('table').width())
       this.$fixedBodyRight.css('overflow-y', this.options.height ? 'auto' : 'hidden')
@@ -320,7 +336,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       }
     }
 
-    if (this.needFixedColumns && this.options.fixedNumber) {
+    if (this.needFixedColumns && this.options.fixedNumber && this.$fixedBody) {
       this.$fixedBody.find('tr').hover(e => {
         toggleHover(e, true)
       }, e => {
