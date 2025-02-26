@@ -1,6 +1,5 @@
 /**
  * @author: Dennis Hernández
- * @webSite: http://djhvscf.github.io/Blog
  * @update: https://github.com/wenzhixin
  * @version: v1.2.0
  */
@@ -60,7 +59,7 @@ const filterFn = () => {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, {
+Object.assign($.fn.bootstrapTable.defaults, {
   reorderableColumns: false,
   maxMovingRows: 10,
   // eslint-disable-next-line no-unused-vars
@@ -70,7 +69,7 @@ $.extend($.fn.bootstrapTable.defaults, {
   dragaccept: null
 })
 
-$.extend($.fn.bootstrapTable.Constructor.EVENTS, {
+Object.assign($.fn.bootstrapTable.events, {
   'reorder-column.bs.table': 'onReorderColumn'
 })
 
@@ -84,7 +83,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       return
     }
 
-    this.makeRowsReorderable()
+    this.makeColumnsReorderable()
   }
 
   _toggleColumn (...args) {
@@ -94,7 +93,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       return
     }
 
-    this.makeRowsReorderable()
+    this.makeColumnsReorderable()
   }
 
   toggleView (...args) {
@@ -108,7 +107,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       return
     }
 
-    this.makeRowsReorderable()
+    this.makeColumnsReorderable()
   }
 
   resetView (...args) {
@@ -118,14 +117,14 @@ $.BootstrapTable = class extends $.BootstrapTable {
       return
     }
 
-    this.makeRowsReorderable()
+    this.makeColumnsReorderable()
   }
 
-  makeRowsReorderable (order = null) {
+  makeColumnsReorderable (order = null) {
     try {
       $(this.$el).dragtable('destroy')
     } catch (e) {
-      // do nothing
+      console.error(e)
     }
     $(this.$el).dragtable({
       maxMovingRows: this.options.maxMovingRows,
@@ -137,7 +136,9 @@ $.BootstrapTable = class extends $.BootstrapTable {
         const sortOrder = {}
 
         table.el.find('th').each((i, el) => {
-          sortOrder[$(el).data('field')] = i
+          if (el.dataset.field !== undefined) {
+            sortOrder[el.dataset.field] = i
+          }
         })
 
         this.columnsSortOrder = sortOrder
@@ -178,7 +179,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
         this.columns = columns
 
         filterFn() // Support <IE9
-        $.each(this.columns, (i, column) => {
+        for (const column of this.columns) {
           let found = false
           const field = column.field
 
@@ -190,7 +191,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
             }
             return true
           })
-        })
+        }
 
         this.options.columns[0] = optionsColumns
 
@@ -208,6 +209,6 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
   orderColumns (order) {
     this.columnsSortOrder = order
-    this.makeRowsReorderable()
+    this.makeColumnsReorderable()
   }
 }

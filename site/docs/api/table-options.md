@@ -74,14 +74,14 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
     - Description: This option is used for the [showButtonIcons](https://bootstrap-table.com/docs/api/table-options/#showbuttonicons) table option.
     - Type: `String` - Only needs the icon class e.g. `fa-users`
   - `render`
-    - Description: Set this option to `false` to hide the button by default, the button is visible again when you add the data attribute `data-show-BUTTONNAME="true"`.
+    - Description: Set this option to `false` to hide the button by default, the button is visible again when you add the data attribute `data-show-button-name="true"`.
   - `attributes`
     - Description: This option allows adding additional html attributes e.g. `title`
     - Type: `Object`
     - Example: `{title: 'Button title'}`
   - `html`
     - Description: If you don't want to autogenerate the html, you can use this option to insert your custom html.
-      The `event` option only works if you custom HTML contains `name="BUTTONNAME"`.
+      The `event` option only works if you custom HTML contains `name="button-name"`.
       If this option is used the following options will be ignored:
       - `text`
       - `icon`
@@ -91,33 +91,33 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
     - Description: Should be used if you want to add an event to the button
     - Type: `Function|Object|String`
 
-   The `event` option can be configured in three ways.
-   One event with `click` event:
-   ```javascript
-   {
-     'event': () => { }
-   }
-   ```
+  The `event` option can be configured in three ways.
+  One event with `click` event:
+  ```javascript
+  {
+    'event': () => { }
+  }
+  ```
 
   One event with a self-defined event type:
   ```javascript
-     {
-       'event': {
-         'mouseenter': () => { }
-       }
-     }
+    {
+      'event': {
+        'mouseenter': () => { }
+      }
+    }
   ```
 
   Multiple events with self-defined event types:
-    ```javascript
-       {
-         'event': {
-           'click': () => { },
-           'mouseenter': () => { },
-           'mouseleave': () => { }
-         }
-       }
-    ```
+  ```javascript
+    {
+      'event': {
+        'click': () => { },
+        'mouseenter': () => { },
+        'mouseleave': () => { }
+      }
+    }
+  ```
 
   **Hint:** Instead of inline functions, you also can use function names.
 
@@ -154,6 +154,20 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 - **Default:** `'right'`
 
 - **Example:** [Buttons Align](https://examples.bootstrap-table.com/#options/buttons-align.html)
+
+## buttonsAttributeTitle
+
+- **Attribute:** `data-buttons-attribute-title`
+
+- **Type:** `String`
+
+- **Detail:**
+
+  Customize the title attribute of the toolbar buttons, which is mainly used to customize the toolbar style.
+
+- **Default:** `'title'`
+
+- **Example:** [Buttons Attribute Title](https://examples.bootstrap-table.com/#options/buttons-attribute-title.html)
 
 ## buttonsClass
 
@@ -509,10 +523,25 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 - **Detail:**
 
   Escapes a string for insertion into HTML, replacing &, <, >, ", `, and ' characters.
+  To disable it for the column titles check the `escapeTitle` option.
 
 - **Default:** `false`
 
 - **Example:** [Table Escape](https://examples.bootstrap-table.com/#options/table-escape.html)
+
+## escapeTitle
+
+- **Attribute:** `data-escape-title`
+
+- **Type:** `Boolean`
+
+- **Detail:**
+
+  Toggles if the `escape` option should be applied to the column titles.
+
+- **Default:** `true`
+
+- **Example:** [Table Escape title](https://examples.bootstrap-table.com/#options/table-escape-title.html)
 
 ## filterOptions
 
@@ -528,6 +557,20 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 
 - **Example:** [Filter Options](https://examples.bootstrap-table.com/#options/filter-options.html)
 
+## fixedScroll
+
+- **Attribute:** `data-fixed-scroll`
+
+- **Type:** `Boolean`
+
+- **Detail:**
+
+  Set `true` to enable the fixed scrollbar position of the table when loading data.
+
+- **Default:** `false`
+
+- **Example:** [Fixed Scroll](https://examples.bootstrap-table.com/#options/fixed-scroll.html)
+
 ## footerField
 
 - **Attribute:** `data-footer-field`
@@ -537,7 +580,7 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 - **Detail:**
 
   Defines the key of the footer Object (From data array or server response JSON).
-  The footer Object can be used to set/define footer colspans and/or the value of the footer.
+  The footer Object can be used to set/define footer colspan and/or the value of the footer.
   Only triggered when `data-pagination` is `true` and `data-side-pagination` is `server`.
 
 
@@ -681,9 +724,22 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 
 - **Detail:**
 
-  Defines icon set name (`'glyphicon'` or `'fa'` for FontAwesome). By default, `'fa'` is used for Bootstrap v4.
+  Defines icon set name. By default, this option is automatically calculated by the theme.
 
-- **Default:** `'fa'`
+  ```js
+  {
+    bootstrap3: 'glyphicon',
+    bootstrap4: 'fa',
+    bootstrap5: 'bi',
+    'bootstrap-table': 'icon',
+    bulma: 'fa',
+    foundation: 'fa',
+    materialize: 'material-icons',
+    semantic: 'fa'
+  }
+  ```
+
+- **Default:** `undefined`
 
 - **Example:** [Icons Prefix](https://examples.bootstrap-table.com/#options/icons-prefix.html)
 ## idField
@@ -694,7 +750,7 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 
 - **Detail:**
 
-  Indicate which field will be used as checkbox/radiobox value, its the counterpart to [selectItemName](https://bootstrap-table.com/docs/api/table-options/#selectitemname).
+  Indicate which field will be used as checkbox/radio value, its the counterpart to [selectItemName](https://bootstrap-table.com/docs/api/table-options/#selectitemname).
 
 - **Default:** `undefined`
 
@@ -770,7 +826,7 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
   Allows for fallback locales, if loaded, in the following order:
 
   * First tries for the locale as specified,
-  * Then tries the locale with '_' translated to '-' and the region code uppercased,
+  * Then tries the locale with '_' translated to '-' and the region code upper cased,
   * Then tries the short locale code (i.e. `'zh'` instead of `'zh-CN'`),
   * And finally will use the last locale file loaded (or the default locale if no locales loaded).
 
@@ -923,6 +979,23 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 - **Default:** `'right'`
 
 - **Example:** [Pagination H Align](https://examples.bootstrap-table.com/#options/pagination-h-align.html)
+
+## paginationLoadMore
+
+- **Attribute:** `data-pagination-load-more`
+
+- **Type:** `Boolean`
+
+- **Detail:**
+
+  Set `true` to enable loading more data through pagination. It is only used in the client-side pagination. In general, to implement the "load more" functionality, it is often necessary to combine it with a `responseHandler` to process the returned data.
+
+  It is primarily used in scenarios where the total number of pages is unknown. In such cases, it is not possible to display the exact total count or calculate the total number of pages. Instead, a display format such as "100+" can be utilized to indicate the presence of additional items beyond the displayed count. As the user navigates to the last page, more data is loaded, along with an update to the pagination information. This process continues until all data loading is complete.
+
+- **Default:** `false`
+
+- **Example:** [Pagination Load More](https://examples.bootstrap-table.com/#options/pagination-load-more.html)
+
 
 ## paginationLoop
 
@@ -1181,10 +1254,25 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
   Notes:
   - If you want to use a custom search input, use the [searchSelector](https://bootstrap-table.com/docs/api/table-options/#searchSelector).
   - You can also search via regex using the [regexSearch](https://bootstrap-table.com/docs/api/table-options/#regexSearch) option.
+  - If you want to send searchable params to server-side pagination, use the [searchable](https://bootstrap-table.com/docs/api/table-options/#searchable) option.
 
 - **Default:** `false`
 
 - **Example:** [Table Search](https://examples.bootstrap-table.com/#options/table-search.html)
+
+## searchable
+
+- **Attribute:** `data-searchable`
+
+- **Type:** `Boolean`
+
+- **Detail:**
+
+  Set `true` to send [searchable params](https://bootstrap-table.com/docs/api/column-options/#searchable) to the server while using server-side pagination.
+
+- **Default:** `false`
+
+- **Example:** [Searchable](https://examples.bootstrap-table.com/#options/searchable.html)
 
 ## searchAccentNeutralise
 
@@ -1349,7 +1437,7 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 
 - **Detail:**
 
-  Set `true` to show the columns drop down list. We can set the [`switchable`](/docs/api/column-options/#switchable) column option to `false` to hide the columns item in the drop down list.
+  Set `true` to show the columns drop down list. We can set the [`switchable`](/docs/api/column-options/#switchable) column option to `false` to hide the columns item in the drop down list. The minimum number of selected columns can be controlled with the [minimumCountColumns](/docs/api/table-options/#minimumcountcolumns) table option.
 
 - **Default:** `false`
 
@@ -1527,6 +1615,15 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
   * [Without server-side pagination](https://github.com/wenzhixin/bootstrap-table-examples/blob/master/json/data1.json)
   * [With server-side pagination](https://github.com/wenzhixin/bootstrap-table-examples/blob/master/json/data2.json)
 
+  **URL parameters:**
+
+  When `sidePagination` is set to `server`, the bootstrap table will make calls to the `url` with the following URL parameters:
+
+  - `offset` with a value between 0 and `total` - 1, indicating the first record to include.
+  - `limit` with a value indicating the number of rows per page.
+
+  When implementing server-side pagination, you must implement a JSON view in a format like [this example](https://examples.wenzhixin.net.cn/examples/bootstrap_table/data). That view must take the URL parameter values indicated above and return records starting at the `offset` index and returns the number of records indicated by `limit`.  For example, if you want records 11-20, your view must obtain the `offset=10` and `limit=10` from the URL string and return records like [this example](https://examples.wenzhixin.net.cn/examples/bootstrap_table/data?offset=10&limit=10).
+
 - **Default:** `'client'`
 
 - **Example:** [Client Side Pagination](https://examples.bootstrap-table.com/#options/client-side-pagination.html) and [Server Side Pagination](https://examples.bootstrap-table.com/#options/server-side-pagination.html)
@@ -1601,6 +1698,20 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 
 - **Example:** [Sort Class](https://examples.bootstrap-table.com/#options/sort-class.html)
 
+## sortEmptyLast
+
+- **Attribute:** `data-sort-empty-last`
+
+- **Type:** `Boolean`
+
+- **Detail:**
+
+  Set `true` to sort `<empty string>`, `undefined` and `null` as last value.
+
+- **Default:** `false`
+
+- **Example:** [Sort Empty Last](https://examples.bootstrap-table.com/#options/sort-empty-last.html)
+
 ## sortName
 
 - **Attribute:** `data-sort-name`
@@ -1642,6 +1753,20 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 - **Default:** `false`
 
 - **Example:** [Sort Reset](https://examples.bootstrap-table.com/#options/sort-reset.html)
+
+## sortResetPage
+
+- **Attribute:** `data-sort-reset-page`
+
+- **Type:** `Boolean`
+
+- **Detail:**
+
+  Set `true` to reset the page number when sorting.
+
+- **Default:** `false`
+
+- **Example:** [Sort Reset Page](https://examples.bootstrap-table.com/#options/sort-reset-page.html)
 
 ## sortStable
 
@@ -1824,6 +1949,15 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
   * [Without server-side pagination](https://github.com/wenzhixin/bootstrap-table-examples/blob/master/json/data1.json)
   * [With server-side pagination](https://github.com/wenzhixin/bootstrap-table-examples/blob/master/json/data2.json)
 
+  **URL parameters:**
+
+  When `sidePagination` is set to `server`, the bootstrap table will make calls to the `url` with the following URL parameters:
+
+  - `offset` with a value between 0 and `total` - 1, indicating the first record to include.
+  - `limit` with a value indicating the number of rows per page.
+
+  When implementing server-side pagination, you must implement a JSON view in a format like [this example](https://examples.wenzhixin.net.cn/examples/bootstrap_table/data). That view must take the URL parameter values indicated above and return records starting at the `offset` index and returns the number of records indicated by `limit`.  For example, if you want records 11-20, your view must obtain the `offset=10` and `limit=10` from the URL string and return records like [this example](https://examples.wenzhixin.net.cn/examples/bootstrap_table/data?offset=10&limit=10).
+
 - **Default:** `undefined`
 
 - **Example:** [From URL](https://examples.bootstrap-table.com/#welcomes/from-url.html)
@@ -1841,6 +1975,8 @@ The table options are defined in `jQuery.fn.bootstrapTable.defaults`.
 - **Detail:**
 
   Set `true` to enable virtual scroll to display a virtual, "infinite" list.
+
+  **Note:** Currently, the implementation assumes that each line has the same height. If the heights of the lines vary, unpredictable bugs may occur. Please ensure that the height of each line is consistent, or apply the style `td { white-space: nowrap; }` to address this issue.
 
 - **Default:** `false`
 

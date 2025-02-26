@@ -2,7 +2,13 @@ export default {
   getBootstrapVersion () {
     let bootstrapVersion = 5
 
-    try {
+    if (typeof window !== 'undefined' && window.bootstrap?.Tooltip?.VERSION) {
+      const rawVersion = window.bootstrap.Tooltip.VERSION
+
+      if (rawVersion !== undefined) {
+        bootstrapVersion = parseInt(rawVersion, 10)
+      }
+    } else if (typeof $ !== 'undefined' && $.fn?.dropdown?.Constructor?.VERSION) {
       const rawVersion = $.fn.dropdown.Constructor.VERSION
 
       // Only try to parse VERSION if it is defined.
@@ -10,19 +16,6 @@ export default {
       if (rawVersion !== undefined) {
         bootstrapVersion = parseInt(rawVersion, 10)
       }
-    } catch (e) {
-      // ignore
-    }
-
-    try {
-      // eslint-disable-next-line no-undef
-      const rawVersion = bootstrap.Tooltip.VERSION
-
-      if (rawVersion !== undefined) {
-        bootstrapVersion = parseInt(rawVersion, 10)
-      }
-    } catch (e) {
-      // ignore
     }
 
     return bootstrapVersion
@@ -44,72 +37,72 @@ export default {
   getIcons (prefix) {
     return {
       glyphicon: {
+        clearSearch: 'glyphicon-trash',
+        columns: 'glyphicon-th icon-th',
+        detailClose: 'glyphicon-minus icon-minus',
+        detailOpen: 'glyphicon-plus icon-plus',
+        fullscreen: 'glyphicon-fullscreen',
         paginationSwitchDown: 'glyphicon-collapse-down icon-chevron-down',
         paginationSwitchUp: 'glyphicon-collapse-up icon-chevron-up',
         refresh: 'glyphicon-refresh icon-refresh',
-        toggleOff: 'glyphicon-list-alt icon-list-alt',
-        toggleOn: 'glyphicon-list-alt icon-list-alt',
-        columns: 'glyphicon-th icon-th',
-        detailOpen: 'glyphicon-plus icon-plus',
-        detailClose: 'glyphicon-minus icon-minus',
-        fullscreen: 'glyphicon-fullscreen',
         search: 'glyphicon-search',
-        clearSearch: 'glyphicon-trash'
+        toggleOff: 'glyphicon-list-alt icon-list-alt',
+        toggleOn: 'glyphicon-list-alt icon-list-alt'
       },
       fa: {
+        clearSearch: 'fa-trash',
+        columns: 'fa-th-list',
+        detailClose: 'fa-minus',
+        detailOpen: 'fa-plus',
+        fullscreen: 'fa-arrows-alt',
         paginationSwitchDown: 'fa-caret-square-down',
         paginationSwitchUp: 'fa-caret-square-up',
         refresh: 'fa-sync',
-        toggleOff: 'fa-toggle-off',
-        toggleOn: 'fa-toggle-on',
-        columns: 'fa-th-list',
-        detailOpen: 'fa-plus',
-        detailClose: 'fa-minus',
-        fullscreen: 'fa-arrows-alt',
         search: 'fa-search',
-        clearSearch: 'fa-trash'
+        toggleOff: 'fa-toggle-off',
+        toggleOn: 'fa-toggle-on'
       },
       bi: {
+        clearSearch: 'bi-trash',
+        columns: 'bi-list-ul',
+        detailClose: 'bi-dash',
+        detailOpen: 'bi-plus',
+        fullscreen: 'bi-arrows-move',
         paginationSwitchDown: 'bi-caret-down-square',
         paginationSwitchUp: 'bi-caret-up-square',
         refresh: 'bi-arrow-clockwise',
-        toggleOff: 'bi-toggle-off',
-        toggleOn: 'bi-toggle-on',
-        columns: 'bi-list-ul',
-        detailOpen: 'bi-plus',
-        detailClose: 'bi-dash',
-        fullscreen: 'bi-arrows-move',
         search: 'bi-search',
-        clearSearch: 'bi-trash'
+        toggleOff: 'bi-toggle-off',
+        toggleOn: 'bi-toggle-on'
       },
       icon: {
+        clearSearch: 'icon-trash-2',
+        columns: 'icon-list',
+        detailClose: 'icon-minus',
+        detailOpen: 'icon-plus',
+        fullscreen: 'icon-maximize',
         paginationSwitchDown: 'icon-arrow-up-circle',
         paginationSwitchUp: 'icon-arrow-down-circle',
         refresh: 'icon-refresh-cw',
-        toggleOff: 'icon-toggle-right',
-        toggleOn: 'icon-toggle-right',
-        columns: 'icon-list',
-        detailOpen: 'icon-plus',
-        detailClose: 'icon-minus',
-        fullscreen: 'icon-maximize',
         search: 'icon-search',
-        clearSearch: 'icon-trash-2'
+        toggleOff: 'icon-toggle-right',
+        toggleOn: 'icon-toggle-right'
       },
       'material-icons': {
+        clearSearch: 'delete',
+        columns: 'view_list',
+        detailClose: 'remove',
+        detailOpen: 'add',
+        fullscreen: 'fullscreen',
         paginationSwitchDown: 'grid_on',
         paginationSwitchUp: 'grid_off',
         refresh: 'refresh',
-        toggleOff: 'tablet',
-        toggleOn: 'tablet_android',
-        columns: 'view_list',
-        detailOpen: 'add',
-        detailClose: 'remove',
-        fullscreen: 'fullscreen',
-        sort: 'sort',
         search: 'search',
-        clearSearch: 'delete'
+        sort: 'sort',
+        toggleOff: 'tablet',
+        toggleOn: 'tablet_android'
       }
-    }[prefix]
+    }[prefix] || {}
   },
 
   getSearchInput (that) {
@@ -117,6 +110,80 @@ export default {
       return $(that.options.searchSelector)
     }
     return that.$toolbar.find('.search input')
+  },
+
+  // $.extend: https://github.com/jquery/jquery/blob/3.6.2/src/core.js#L132
+  extend (...args) {
+    let target = args[0] || {}
+    let i = 1
+    let deep = false
+    let clone
+
+    // Handle a deep copy situation
+    if (typeof target === 'boolean') {
+      deep = target
+
+      // Skip the boolean and the target
+      target = args[i] || {}
+      i++
+    }
+
+    // Handle case when target is a string or something (possible in deep copy)
+    if (typeof target !== 'object' && typeof target !== 'function') {
+      target = {}
+    }
+
+    for (; i < args.length; i++) {
+      const options = args[i]
+
+      // Ignore undefined/null values
+      if (typeof options === 'undefined' || options === null) {
+        continue
+      }
+
+      // Extend the base object
+      // eslint-disable-next-line guard-for-in
+      for (const name in options) {
+        const copy = options[name]
+
+        // Prevent Object.prototype pollution
+        // Prevent never-ending loop
+        if (name === '__proto__' || target === copy) {
+          continue
+        }
+
+        const copyIsArray = Array.isArray(copy)
+
+        // Recurse if we're merging plain objects or arrays
+        if (deep && copy && (this.isObject(copy) || copyIsArray)) {
+          const src = target[name]
+
+          if (copyIsArray && Array.isArray(src)) {
+            if (src.every(it => !this.isObject(it) && !Array.isArray(it))) {
+              target[name] = copy
+              continue
+            }
+          }
+
+          if (copyIsArray && !Array.isArray(src)) {
+            clone = []
+          } else if (!copyIsArray && !this.isObject(src)) {
+            clone = {}
+          } else {
+            clone = src
+          }
+
+          // Never move original objects, clone them
+          target[name] = this.extend(deep, clone, copy)
+
+        // Don't bring in undefined values
+        } else if (copy !== undefined) {
+          target[name] = copy
+        }
+      }
+    }
+
+    return target
   },
 
   // it only does '%s', and return '' when arguments are undefined
@@ -137,8 +204,18 @@ export default {
     return flag ? str : ''
   },
 
-  isObject (val) {
-    return val instanceof Object && !Array.isArray(val)
+  isObject (obj) {
+    if (typeof obj !== 'object' || obj === null) {
+      return false
+    }
+
+    let proto = obj
+
+    while (Object.getPrototypeOf(proto) !== null) {
+      proto = Object.getPrototypeOf(proto)
+    }
+
+    return Object.getPrototypeOf(obj) === proto
   },
 
   isEmptyObject (obj = {}) {
@@ -163,7 +240,7 @@ export default {
     const flag = []
 
     for (const column of columns[0]) {
-      totalCol += column.colspan || 1
+      totalCol += +column.colspan || 1
     }
 
     for (let i = 0; i < columns.length; i++) {
@@ -175,8 +252,8 @@ export default {
 
     for (let i = 0; i < columns.length; i++) {
       for (const r of columns[i]) {
-        const rowspan = r.rowspan || 1
-        const colspan = r.colspan || 1
+        const rowspan = +r.rowspan || 1
+        const colspan = +r.colspan || 1
         const index = flag[i].indexOf(false)
 
         r.colspanIndex = index
@@ -188,7 +265,7 @@ export default {
             r.field = index
           }
         } else {
-          r.colspanGroup = r.colspan
+          r.colspanGroup = +r.colspan
         }
 
         for (let j = 0; j < rowspan; j++) {
@@ -207,7 +284,7 @@ export default {
     return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   },
 
-  updateFieldGroup (columns) {
+  updateFieldGroup (columns, fieldColumns) {
     const allColumns = [].concat(...columns)
 
     for (const c of columns) {
@@ -216,7 +293,14 @@ export default {
           let colspan = 0
 
           for (let i = r.colspanIndex; i < r.colspanIndex + r.colspanGroup; i++) {
-            const column = allColumns.find(col => col.fieldIndex === i)
+            const underColumns = allColumns.filter(col => col.fieldIndex === i)
+            const column = underColumns[underColumns.length - 1]
+
+            if (underColumns.length > 1) {
+              for (let j = 0; j < underColumns.length - 1; j++) {
+                underColumns[j].visible = column.visible
+              }
+            }
 
             if (column.visible) {
               colspan++
@@ -224,6 +308,20 @@ export default {
           }
           r.colspan = colspan
           r.visible = colspan > 0
+        }
+      }
+    }
+
+    if (columns.length < 2) {
+      return
+    }
+
+    for (const column of fieldColumns) {
+      const sameColumns = allColumns.filter(col => col.fieldIndex === column.fieldIndex)
+
+      if (sameColumns.length > 1) {
+        for (const c of sameColumns) {
+          c.visible = column.visible
         }
       }
     }
@@ -314,8 +412,15 @@ export default {
         return true
       }
     } catch (e) {
+      console.error(e)
       return false
     }
+    return false
+  },
+
+  escapeApostrophe (value) {
+    return value.toString()
+      .replace(/'/g, '&#39;')
   },
 
   escapeHTML (text) {
@@ -414,8 +519,8 @@ export default {
 
       $el.find('>td,>th').each((_x, el) => {
         const $el = $(el)
-        const cspan = +$el.attr('colspan') || 1
-        const rspan = +$el.attr('rowspan') || 1
+        const colspan = +$el.attr('colspan') || 1
+        const rowspan = +$el.attr('rowspan') || 1
         let x = _x
 
         // skip already occupied cells in current row
@@ -424,8 +529,8 @@ export default {
         }
 
         // mark matrix elements occupied by current cell with true
-        for (let tx = x; tx < x + cspan; tx++) {
-          for (let ty = y; ty < y + rspan; ty++) {
+        for (let tx = x; tx < x + colspan; tx++) {
+          for (let ty = y; ty < y + rowspan; ty++) {
             if (!m[ty]) { // fill missing rows
               m[ty] = []
             }
@@ -435,7 +540,7 @@ export default {
 
         const field = columns[x].field
 
-        row[field] = $el.html().trim()
+        row[field] = this.escapeApostrophe($el.html().trim())
         // save td's id, class and data-* attributes
         row[`_${field}_id`] = $el.attr('id')
         row[`_${field}_class`] = $el.attr('class')
@@ -450,7 +555,7 @@ export default {
     return data
   },
 
-  sort (a, b, order, sortStable, aPosition, bPosition) {
+  sort (a, b, order, options, aPosition, bPosition) {
     if (a === undefined || a === null) {
       a = ''
     }
@@ -458,7 +563,7 @@ export default {
       b = ''
     }
 
-    if (sortStable && a === b) {
+    if (options.sortStable && a === b) {
       a = aPosition
       b = bPosition
     }
@@ -475,6 +580,16 @@ export default {
         return order
       }
       return 0
+    }
+
+    if (options.sortEmptyLast) {
+      if (a === '') {
+        return 1
+      }
+
+      if (b === '') {
+        return -1
+      }
     }
 
     if (a === b) {
@@ -521,7 +636,7 @@ export default {
     if (arg === undefined) {
       return arg
     }
-    return $.extend(true, Array.isArray(arg) ? [] : {}, arg)
+    return this.extend(true, Array.isArray(arg) ? [] : {}, arg)
   },
 
   debounce (func, wait, immediate) {
@@ -544,5 +659,175 @@ export default {
 
       if (callNow) func.apply(context, args)
     }
+  },
+
+  replaceSearchMark (html, searchText) {
+    const isDom = html instanceof Element
+    const node = isDom ? html : document.createElement('div')
+    const regExp = new RegExp(searchText, 'gim')
+    const replaceTextWithDom = (text, regExp) => {
+      const result = []
+      let match
+      let lastIndex = 0
+
+      while ((match = regExp.exec(text)) !== null) {
+        if (lastIndex !== match.index) {
+          result.push(document.createTextNode(text.substring(lastIndex, match.index)))
+        }
+        const mark = document.createElement('mark')
+
+        mark.innerText = match[0]
+        result.push(mark)
+        lastIndex = match.index + match[0].length
+      }
+      if (!result.length) {
+        // no match
+        return
+      }
+      if (lastIndex !== text.length) {
+        result.push(document.createTextNode(text.substring(lastIndex)))
+      }
+      return result
+    }
+    const replaceMark = node => {
+      for (let i = 0; i < node.childNodes.length; i++) {
+        const child = node.childNodes[i]
+
+        if (child.nodeType === document.TEXT_NODE) {
+          const elements = replaceTextWithDom(child.data, regExp)
+
+          if (elements) {
+            for (const el of elements) {
+              node.insertBefore(el, child)
+            }
+            node.removeChild(child)
+            i += elements.length - 1
+          }
+        }
+        if (child.nodeType === document.ELEMENT_NODE) {
+          replaceMark(child)
+        }
+      }
+    }
+
+    if (!isDom) {
+      node.innerHTML = html
+    }
+    replaceMark(node)
+    return isDom ? node : node.innerHTML
+  },
+
+  classToString (class_) {
+    if (typeof class_ === 'string') {
+      return class_
+    }
+    if (Array.isArray(class_)) {
+      return class_.map(x => this.classToString(x)).filter(x => x).join(' ')
+    }
+    if (class_ && typeof class_ === 'object') {
+      return Object.entries(class_).map(([k, v]) => v ? k : '').filter(x => x).join(' ')
+    }
+    return ''
+  },
+
+  parseStyle (dom, style) {
+    if (!style) {
+      return dom
+    }
+    if (typeof style === 'string') {
+      style.split(';').forEach(i => {
+        const index = i.indexOf(':')
+
+        if (index > 0) {
+          const k = i.substring(0, index).trim()
+          const v = i.substring(index + 1).trim()
+
+          dom.style.setProperty(k, v)
+        }
+      })
+    } else if (Array.isArray(style)) {
+      for (const item of style) {
+        this.parseStyle(dom, item)
+      }
+    } else if (typeof style === 'object') {
+      for (const [k, v] of Object.entries(style)) {
+        dom.style.setProperty(k, v)
+      }
+    }
+    return dom
+  },
+
+  h (element, attrs, children) {
+    const el = element instanceof HTMLElement ? element : document.createElement(element)
+    const _attrs = attrs || {}
+    const _children = children || []
+
+    // default attributes
+    if (el.tagName === 'A') {
+      el.href = 'javascript:'
+    }
+
+    for (const [k, v] of Object.entries(_attrs)) {
+      if (v === undefined) {
+        continue
+      }
+      if (['text', 'innerText'].includes(k)) {
+        el.innerText = v
+      } else if (['html', 'innerHTML'].includes(k)) {
+        el.innerHTML = v
+      } else if (k === 'children') {
+        _children.push(...v)
+      } else if (k === 'class') {
+        el.setAttribute('class', this.classToString(v))
+      } else if (k === 'style') {
+        if (typeof v === 'string') {
+          el.setAttribute('style', v)
+        } else {
+          this.parseStyle(el, v)
+        }
+      } else if (k.startsWith('@') || k.startsWith('on')) {
+        // event handlers
+        const event = k.startsWith('@') ? k.substring(1) : k.substring(2).toLowerCase()
+        const args = Array.isArray(v) ? v : [v]
+
+        el.addEventListener(event, ...args)
+      } else if (k.startsWith('.')) {
+        // set property
+        el[k.substring(1)] = v
+      } else {
+        el.setAttribute(k, v)
+      }
+    }
+    if (_children.length) {
+      el.append(..._children)
+    }
+    return el
+  },
+
+  htmlToNodes (html) {
+    if (html instanceof $) {
+      return html.get()
+    }
+    if (html instanceof Node) {
+      return [html]
+    }
+    if (typeof html !== 'string') {
+      html = new String(html).toString()
+    }
+    const d = document.createElement('div')
+
+    d.innerHTML = html
+    return d.childNodes
+  },
+
+  addQueryToUrl (url, query) {
+    const hashArray = url.split('#')
+    const [baseUrl, search] = hashArray[0].split('?')
+    const urlParams = new URLSearchParams(search)
+
+    for (const [key, value] of Object.entries(query)) {
+      urlParams.set(key, value)
+    }
+    return `${baseUrl}?${urlParams.toString()}#${hashArray.slice(1).join('#')}`
   }
 }

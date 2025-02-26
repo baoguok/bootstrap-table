@@ -1,14 +1,13 @@
-import glob from 'glob'
-import babel from 'rollup-plugin-babel'
-import resolve from 'rollup-plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs'
-import { terser } from 'rollup-plugin-terser'
-import inject from 'rollup-plugin-inject'
+import { globSync } from 'glob'
+import { babel } from '@rollup/plugin-babel'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
+import terser from '@rollup/plugin-terser'
+import inject from '@rollup/plugin-inject'
 import copy from 'rollup-plugin-copy'
-import multiEntry from 'rollup-plugin-multi-entry'
-import vue from 'rollup-plugin-vue'
+import multiEntry from '@rollup/plugin-multi-entry'
 
-const files = glob.sync('src/**/*.js', {
+const files = globSync('src/**/*.js', {
   ignore: [
     'src/constants/**',
     'src/utils/**',
@@ -27,9 +26,10 @@ const plugins = [
     exclude: 'node_modules/**',
     $: 'jquery'
   }),
-  resolve(),
+  nodeResolve(),
   commonjs(),
   babel({
+    babelHelpers: 'bundled',
     exclude: 'node_modules/**'
   }),
   copy({
@@ -84,40 +84,6 @@ config.push({
   external,
   plugins: [
     multiEntry(),
-    ...plugins
-  ]
-})
-
-out = 'dist/bootstrap-table-vue.js'
-if (process.env.NODE_ENV === 'production') {
-  out = out.replace(/.js$/, '.min.js')
-}
-config.push({
-  input: 'src/vue/index.js',
-  output: {
-    name: 'BootstrapTable',
-    file: out,
-    format: 'umd'
-  },
-  plugins: [
-    vue(),
-    ...plugins
-  ]
-})
-
-out = 'dist/bootstrap-table-vue.esm.js'
-if (process.env.NODE_ENV === 'production') {
-  out = out.replace(/.js$/, '.min.js')
-}
-config.push({
-  input: 'src/vue/BootstrapTable.vue',
-  output: {
-    name: 'BootstrapTable',
-    file: out,
-    format: 'esm'
-  },
-  plugins: [
-    vue(),
     ...plugins
   ]
 })

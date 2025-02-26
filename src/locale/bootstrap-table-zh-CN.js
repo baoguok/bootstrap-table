@@ -5,10 +5,10 @@
 
 $.fn.bootstrapTable.locales['zh-CN'] = $.fn.bootstrapTable.locales['zh'] = {
   formatCopyRows () {
-    return 'Copy Rows'
+    return '复制行'
   },
   formatPrint () {
-    return 'Print'
+    return '打印'
   },
   formatLoadingMessage () {
     return '正在努力地加载数据中，请稍候'
@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['zh-CN'] = $.fn.bootstrapTable.locales['zh'] = {
   formatRefresh () {
     return '刷新'
   },
-  formatToggle () {
-    return '切换'
-  },
   formatToggleOn () {
     return '显示卡片视图'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['zh-CN'] = $.fn.bootstrapTable.locales['zh'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['zh-CN'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['zh-CN'])

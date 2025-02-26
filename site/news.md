@@ -4,6 +4,361 @@ title: News
 description: News and announcements for all things Bootstrap Table, including new releases.
 ---
 
+## Bootstrap Table 1.24.0
+
+<span class="post-date">22 Dec 2024</span>
+
+#### Core
+
+- **New:** Added `card-view-field` class to `card-view`.
+- **Update:** Fixed `id` not working bug in `rowAttributes`.
+- **Update:** Fixed `data` field attr not working bug.
+- **Update:** Fixed column is `undefined` bug in `updateFieldGroup` when using `refreshOptions`.
+- **Update:** Fixed `post-header` trigger bug after table destroy.
+- **Update:** Fixed `strictSearch` not working bug.
+- **Update:** Fixed `insertRow` bug after on the last row of the table.
+- **Update:** Fixed display error of total rows using load more pagination.
+- **Update:** Updated Sass and refined the SCSS file.
+- **Update:** Update Eslint and fix some lint errors.
+
+#### Extensions
+
+- **Update(cookie):** Fixed cookie columns display error after adding a column.
+- **Update(filter-control):** Fixed select not working bug after an Ajax loaded.
+
+## Bootstrap Table 1.23.5
+
+<span class="post-date">1 Oct 2024</span>
+
+#### Core
+
+- **New:** Added `getFooterData` method.
+- **Update:** Fixed `refresh` invalid url bug when `url` is relative path.
+- **Update:** Fixed `getData` bug with `formatted` param.
+- **Update:** Fixed column class option not work bug in td.
+
+## Bootstrap Table 1.23.4
+
+<span class="post-date">20 Sep 2024</span>
+
+#### Core
+
+- **New:** Added support for column options `formatter` and `footerFormatter` methods returning type `jQuery`, `HTMLElement`.
+- **New:** Added `sortReset` method to reset the current sort state.
+- **New:** Added a presentation role if no matching rows are found.
+- **Update:** Fixed `refresh` method doesn't reuse parameters provided as query bug.
+- **Update:** Fixed compatibility issues when `colspan` is set as a string.
+
+## Bootstrap Table 1.23.2
+
+<span class="post-date">27 Jul 2024</span>
+
+#### Core
+
+- **New:** Added `buttonsAttributeTitle` option to customize title attribute.
+- **Update:** Updated sort icons using SVG instead of PNG.
+- **Update:** Fixed search highlight not working when it contains multiple HTML elements.
+- **Update:** Fixed the `esbuild` bundle error.
+- **Update:** Fixed insertRow, updateRow, and updateCell methods bugs.
+- **Update:** Fixed `undefined` error when searching using the dotted field.
+
+## Bootstrap Table 1.23.1
+
+<span class="post-date">13 Jul 2024</span>
+
+#### Core
+
+- **Update:** Improved vue component init twice without `setTimeout`.
+- **Update:** Updated `af-ZA`, `fr-BE`, `fr-CH`, `fr-FR`, `fr-LU`, and `id-ID` locales.
+
+#### Extensions
+
+- **Update(editable):** Fixed editable display bug of select type.
+- **Update(sticky-header):** Fixed issue if sticky-header extension is loaded but not enabled.
+
+## Bootstrap Table 1.23.0
+
+<span class="post-date">30 Jun 2024</span>
+
+#### Core
+
+- **New:** Add support for vue3 instead of vue2.
+- **Update:** Fixed `getData` with `formatted` data bug when a column is missing.
+- **Update:** Fixed `toggleColumn` exception when the field does not exist.
+- **Update:** Fixed vue component init twice when options and columns both changed.
+
+#### Extensions
+
+- **New(addrbar):** Added `addrCustomParams` option for custom parameters.
+- **New(filter-control):** Added `filterControlSearchClear` option to stop clearing the filters when using `showSearchButton` option.
+- **Update(filter-control):** Fixed error with clear filters button when not enabled cookie extension.
+- **Update(filter-control):** Fixed bug with enabled cookie extension using `localStorage`.
+- **Update(multiple-sort):** Fixed not trigger event bug when using server-side pagination.
+
+## Bootstrap Table 1.22.6
+
+<span class="post-date">15 May 2024</span>
+
+#### Extensions
+
+- **Update(cookie):** Fixed cookie does not work bug with pagination ALL list.
+- **Update(editable):** Fixed the `formatter` function does not include the `field` parameter bug.
+- **Update(toolbar):** Fixed toolbar display bug when using an HTML title.
+- **Update(toolbar):** Fixed toolbar does not update bug when column visible updated.
+- **Update(toolbar):** Fixed toolbar does not update bug when the locale is changed.
+
+## Bootstrap Table 1.22.5
+
+<span class="post-date">29 Apr 2024</span>
+
+#### Core
+
+- **New:** Added `sl-SI` locales.
+- **New:** Added support for HTML to the `updateColumnTitle` method.
+- **Update:** Fixed the `getRowByUniqueId` bug when `uniqueId` is of mixed data formats.
+- **Update:** Fixed not triggering `sort` event bug using server-side pagination.
+- **Update:** Fixed custom `iconPrefix` and `icons` bugs.
+- **Update:** Fixed virtual scroll cannot work bug in modal.
+
+#### Extensions
+
+- **Update(multiple-sort):** Fixed the duplicated ID bug in the multiple-sort extension.
+
+## Bootstrap Table 1.22.4
+
+<span class="post-date">26 Mar 2024</span>
+
+#### Core
+
+- **New:** Added `paginationLoadMore` option.
+- **Update:** Fixed change visibility of multiple headers with the same index.
+- **Update:** Fixed footer height bug when setting `table-sm`.
+- **Update:** Fixed the `locale` not changed bug using the `refreshOptions` method.
+- **Update:** Fixed custom iconPrefix and icons bugs.
+- **Update:** Updated `vi-VN`, `zh-CN` and `zh-TW` locales.
+
+#### Extensions
+
+- **New(copy-rows):** Added `copyRowsHandler` option to handle the copy rows data.
+- **New(print):** Added `printStyles` option.
+- **Update(export):** Updated the trigger timing for export-started.
+- **Update(multiple-sort):** Fixed the missing parameters error of the `sorter` function.
+- **Update(pipeline):** Fixed loading message not display bug.
+
+## Bootstrap Table 1.22.3
+
+<span class="post-date">27 Feb 2024</span>
+
+#### Core
+
+- **New:** Added `fixedScroll` option.
+- **New:** Added support for setting icons automatically by `iconsPrefix`.
+- **Update:** Fixed search bug when the field has `.` character.
+- **Update:** Updated `tr-TR`, `es-ES`, `pt-BR` and `pt-PT` locales.
+
+#### Extensions
+
+- **New(addrbar):** Fixed addrbar bug when using `sortReset` option.
+- **Update(jump-to):** Fixed page jump to bug when using both pagination display.
+- **Update(print):** Fixed print bug when field is not set.
+
+## Bootstrap Table 1.22.2
+
+<span class="post-date">11 Jan 2024</span>
+
+#### Core
+
+- **New:** Added `footerStyle` column option.
+- **Update:** Fixed empty style in header and footer bug.
+- **Update:** Fixed the trigger order of `sort` event.
+- **Update:** Updated `ar-SA` locale.
+
+#### Extensions
+
+- **New(cookie):** Added cookie support for custom view extension.
+- **Update(cookie):** Fixed cookie bug when using `cardView` option.
+- **Update(cookie):** Fixed cookie bug with column switchable.
+- **Update(editable):** Fixed `export-saved` event error when `exportDataType` is `all`.
+- **Update(filter-control):** Fixed `searchAccentNeutralise` option not work.
+- **Update(filter-control):** Fixed `filterOrderBy` not work bug for select.
+- **Update(group-by):** Fixed group by bug when using `singleSelect` option.
+- **Update(reorder-rows):** Fixed reorder bug when using pagination.
+
+#### Documentation
+
+- **Update:** Improved the parameter of `updateCellByUniqueId` method.
+- **Update:** Improved the print docs.
+
+## Bootstrap Table 1.22.1
+
+<span class="post-date">6 Jul 2023</span>
+
+#### Core
+
+- **Update:** Fixed maximum call stack size exceeded error.
+- **Update:** Updated `ca-ES` locale.
+
+## Bootstrap Table 1.22.0
+
+<span class="post-date">16 Jun 2023</span>
+
+#### Core
+
+- **New:** Added `sortBy` method.
+- **New:** Added `switchableLabel` column option.
+- **New:** Added support for `class` attribute in toolbar buttons.
+- **Update:** Removed title from columns button.
+
+#### Extensions
+
+- **Update(addrbar):** Fixed clear search bug when clicking clearSearch button.
+- **Update(filter-control):** Fixed pagination server side not working bug.
+
+## Bootstrap Table 1.21.4
+
+<span class="post-date">1 Apr 2023</span>
+
+#### Core
+
+- **New:** Added searchable table option to enable sending searchable (columns) parameters.
+- **Update:** Fixed Maximum call stack size exceeded error.
+- **Update:** Fixed getData bug with hidden rows.
+- **Update:** Added support for `select` form to the `searchSelector` option.
+
+#### Extensions
+
+- **Update(filter-control):** Fixed inputs losing their content when using nested attributes.
+- **Update(reorder-rows):** Fixed reorder row bug when side-pagination is server.
+
+## Bootstrap Table 1.21.3
+
+<span class="post-date">4 Mar 2023</span>
+
+#### Core
+
+- **New:** Added `escapeTitle` table option.
+- **New:** Added Aria Label to the search input for screen readers.
+- **New:** Persist data attributes for the header(`th`).
+- **Update:** Fixed wrong condition for searching with server-side pagination.
+- **Update:** Fixed overwriting the `filterOptions` after rebuild.
+- **Update:** Fixed apostrophe issue when table via `html`.
+- **Update:** Updated extend util instead of `$.extend`.
+- **Update:** Updated Constructor.EVENTS to events.
+- **Update:** Updated packages to the latest version.
+
+#### Extensions
+
+- **Update(cookie):** Fixed issue with hidden and radio/checkbox columns.
+- **Update(export):** Fixed `exportTypes` option not working bug.
+- **Update(filter-control):** Fixed selector scope issues with multiple tables.
+- **Update(filter-control):** Fixed filtering values issue of select with `html` value.
+- **Update(reorder-columns):** Fixed same internal function name with `reorder-rows`.
+- **Update(treegrid):** Fixed `treegrid` not working when id is text.
+
+## Bootstrap Table 1.21.2
+
+<span class="post-date">12 Dec 2022</span>
+
+#### Core
+
+- **New:** Added `sortResetPage` option to reset the page number when sorting.
+- **Update:** Fixed overwrite default option bug.
+- **Update:** Updated es-ES, es-CR locale.
+- **Update:** Improved scss style and lint.
+- **Update:** Used scss vars for sorting background image URLs.
+
+#### Extensions
+
+- **New(custom-view):** Added `onToggleCustomView` event.
+- **Update(cookie):** Fixed cookie name compare bug on using `cookiesEnabled` option.
+- **Update(custom-view):** Fixed `showCustomView` option cannot work.
+- **Update(filter-control):** Fixed bug while using a select filter and set `searchFormatter` to false.
+- **Update(filter-control):** Fixed missing class when specifying `iconSize`.
+- **Update(reorder-rows):** Updated default value to `reorder-rows-on-drag-class` of `onDragClass` option.
+
+## Bootstrap Table 1.21.1
+
+<span class="post-date">22 Sep 2022</span>
+
+#### Core
+
+- **Update:** Improved `updateCell` to update one HTML cell only.
+- **Update:** Updated `fr-FR` locale.
+- **Update:** Added missing locales for aria-label.
+
+#### Extensions
+
+- **Update(export):** Added missing locales for aria-label.
+
+## Bootstrap Table 1.21.0
+
+<span class="post-date">20 Aug 2022</span>
+
+#### Core
+
+- **New:** Added `sortEmptyLast` option to allow sorting empty data.
+- **Update:** Fixed bug on nested search with null child.
+- **Update:** Fixed detail view with filter click error.
+- **Update:** Fixed header does not center correctly for the sortable column.
+- **Update:** Fixed `regexpCompare` bug when filtering columns.
+- **Update:** Fixed `showToggle` title display error.
+- **Update:** Fixed `remove` and `removeByUniqueId` using object param bug.
+- **Update:** Fixed `searchHighlight` bug while using `searchAccentNeutralise`.
+- **Update:** Fixed missing sort for `customSearch` option.
+- **Update:** Removed duplicated escaping of the column value.
+- **Update:** Updated `uk-UA` locale.
+
+#### Extensions
+
+- **New(cookie):** : Added `hiddenColumns` cookie to prevent issues with new added columns.
+- **New(editable):** Added `field` param to `noEditFormatter` option.
+- **New(export):** Added `onExportStarted` event.
+- **New(filter-control):** Added accent normalization check.
+- **New(filter-control):** Added `filterControlMultipleSearch` and `filterControlMultipleSearchDelimiter` options.
+- **Update(custom-by):** Fixed the custom view attributes.
+- **Update(group-by):** Fixed not handle complex objects bug.
+- **Update(filter-control):** Fixed select values not clear bug after search.
+- **Update(filter-control):** Fixed the select sorting error.
+- **Update(filter-control):** Fixed wrong selector for caching values with multiple tables.
+- **Update(filter-control):** Fixed the `filterDefault` option bug as filter if multiple filters exists.
+- **Update(filter-control):** Fixed filter control special char.
+- **Update(filter-control):** Updated default value to false of `filterStrictSearch`.
+- **Update(filter-control):** Supported not visible columns when using `filterControlContainer` option.
+- **Update(multiple-sort):** Fixed `showMultiSortButton` option bug.
+- **Update(print):** Fixed not handle complex objects bug.
+- **Update(print):** Removed switched-off columns from printed table.
+
+## Bootstrap Table 1.20.2
+
+<span class="post-date">25 May 2022</span>
+
+#### Core
+
+- **Update:** Fixed small memory leak.
+- **Update:** Fixed the detail view bug with the `td` instead of `icon`.
+
+#### Extensions
+
+- **Update(export):** Fixed XSS vulnerability bug by onCellHtmlData.
+- **Update(export):** Fixed export footer bug without setting height.
+- **Update(filter-control):** Fixed the comparison of dates when using the `datepicker`.
+
+## Bootstrap Table 1.20.1
+
+<span class="post-date">12 May 2022</span>
+
+#### Core
+
+- **Update:** Fixed toggle column bug with complex headers.
+- **Update:** Fixed icons option cannot work bug when it's a string.
+- **Update:** Updated TypeScript definitions.
+
+#### Extensions
+
+- **Update(cookie):** Fixed cookie extension error with multiple-sort.
+- **Update(export):** Fixed the `exportOptions` option cannot support the data attribute.
+- **Update(reorder-rows):**  Fixed reorder-rows cannot work because of missing default functions.
+
 ## Bootstrap Table 1.20.0
 
 <span class="post-date">25 Apr 2022</span>
@@ -26,7 +381,7 @@ description: News and announcements for all things Bootstrap Table, including ne
 - **Update:** Fixed `onVirtualScroll` not define default method.
 - **Update:** Updated cs-CZ, ko-KR, nl-NL, nl-BE, bg-BG, fr-LU locales.
 
-##### Extensions
+#### Extensions
 
 - **New(filter-control):** New version of filter-control with new features.
 - **New(reorder-rows):**: Added `onAllowDrop` and `onDragStop` options.
@@ -528,7 +883,7 @@ description: News and announcements for all things Bootstrap Table, including ne
 - **Update(js):** Fixed `detailView` find td elements bug.
 - **Update(js):** Fixed `showColumns` close dropdown bug when item label clicking.
 - **Update(js):** Fixed reset width error after `toggleFullscreen`.
-- **Update(js):** Fixed `cardview` click event bug.
+- **Update(js):** Fixed `cardView` click event bug.
 
 ## Bootstrap Table 1.13.5
 
@@ -563,9 +918,9 @@ description: News and announcements for all things Bootstrap Table, including ne
 <span class="post-date">28 Jan 2019</span>
 
 - **New(js):** Supported full table classes of bootstrap v4.
-- **New(css):** Rewrited bootstrap-table.css to scss.
-- **New(accent-neutralise extension):** Rewrited accent-neutralise extension to ES6.
-- **New(addrbar extension):** Rewrited addrbar extension to ES6 and supported attribute option.
+- **New(css):** Updated bootstrap-table.css to scss.
+- **New(accent-neutralise extension):** Updated accent-neutralise extension to ES6.
+- **New(addrbar extension):** Updated addrbar extension to ES6 and supported attribute option.
 - **New(group-by-v2 extension):** New `groupByFormatter` option.
 - **New(pipeline extension):** New pipeline extension `bootstrap-table-pipeline`.
 - **Remove(js):** Removed `striped` option and use classes instead.
@@ -581,7 +936,7 @@ description: News and announcements for all things Bootstrap Table, including ne
 <span class="post-date">18 Jan 2019</span>
 
 - **New(js):** Added `paginationSuccessivelySize`, `paginationPagesBySide` and `paginationUseIntermediate` pagination options.
-- **New(cookie extension):** Rewrited cookie extension to ES6.
+- **New(cookie extension):** Updated cookie extension to ES6.
 - **New(cookie extension):** Saved `filterBy` method.
 - **New(filter-control extension):** Added `placeholder` as a empty option to the select controls.
 - **New(filter-control extension):** Added `clearFilterControl` method in order to clear all filter controls.
@@ -616,11 +971,11 @@ Here are the highlights of what’s new and updated in new website.
 
 <span class="post-date">01 Jan 2019</span>
 
-- **New(js):** Added `theadClasses` option to supoort bootstrap v4.
+- **New(js):** Added `theadClasses` option to support bootstrap v4.
 - **New(js):** Updated the default icons to font-awesome 5.
-- **New(locale):** Rewrited all locales to ES6.
-- **New(editable extension):** Rewrited `bootstrap-table-editable` to ES6.
-- **New(filter-control extension):** Rewrited `bootstrap-table-filter-control` to ES6.
+- **New(locale):** Updated all locales to ES6.
+- **New(editable extension):** Updated `bootstrap-table-editable` to ES6.
+- **New(filter-control extension):** Updated `bootstrap-table-filter-control` to ES6.
 - **New(treegrid extension):** Added `rootParentId` option.
 - **Update(js):** Fixed `getHiddenRows` method bug.
 - **Update(js):** Fixed `getOptions` method to remove data property.
@@ -636,14 +991,14 @@ Here are the highlights of what’s new and updated in new website.
 
 <span class="post-date">27 Dec 2019</span>
 
-- **New(js):** Rewrited bootstrap-table to ES6.
+- **New(js):** Updated bootstrap-table to ES6.
 - **New(locale):** Added `fi-FI.js` locale.
 - **New(build):** Used babel instead of grunt.
 - **New(filter-control):** Added `created-controls.bs.table` event to filter-control.
-- **New(export extension):** Rewrited export extension to ES6.
+- **New(export extension):** Updated export extension to ES6.
 - **New(export extension):** Added export extension support bootstrap v4.
 - **New(export extension):** Added `exportTable` method.
-- **New(toolbar extension):** Rewrited toolbar extension to ES6.
+- **New(toolbar extension):** Updated toolbar extension to ES6.
 - **New(toolbar extension):** Added toolbar extension supports bootstrap v4.
 - **New(toolbar extension):** Added server sidePagination support
 - **New(resizable extension):** Released new resizable extension version 2.0.0.
@@ -655,9 +1010,9 @@ Here are the highlights of what’s new and updated in new website.
 - **Update(js):** Added `customSearch` support data attribute.
 - **Update(js):** Fixed can't search data with formatter.
 - **Update(js):** Fixed `getRowByUniqueId` error when row unique id is undefined.
-- **Update(js):** Fxied older bootstrap version bug.
+- **Update(js):** Fixed older bootstrap version bug.
 - **Update(css):** Removed toolbar line-height.
-- **Update(css):** Limitted fullscreen CSS rule scope.
+- **Update(css):** Limited fullscreen CSS rule scope.
 - **Update(editable extension):** Fixed editable formatter bug.
 - **Update(extension):** Fixed bug with export extension together.
 - **Update(extension):** Removed click-edit-row and flat-json extensions.

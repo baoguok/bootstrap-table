@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['sr-Cyrl-RS'] = $.fn.bootstrapTable.locales['sr'] = 
   formatRefresh () {
     return 'Освежи'
   },
-  formatToggle () {
-    return 'Промени приказ'
-  },
   formatToggleOn () {
     return 'Прикажи картице'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['sr-Cyrl-RS'] = $.fn.bootstrapTable.locales['sr'] = 
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['sr-Cyrl-RS'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['sr-Cyrl-RS'])

@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['ka-GE'] = $.fn.bootstrapTable.locales['ka'] = {
   formatRefresh () {
     return 'განახლება'
   },
-  formatToggle () {
-    return 'ჩართვა/გამორთვა'
-  },
   formatToggleOn () {
     return 'Show card view'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['ka-GE'] = $.fn.bootstrapTable.locales['ka'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ka-GE'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ka-GE'])

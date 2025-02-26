@@ -4,74 +4,77 @@
 
 const Utils = $.fn.bootstrapTable.utils
 
-function printPageBuilderDefault (table) {
+function printPageBuilderDefault (table, styles) {
   return `
-  <html>
-  <head>
-  <style type="text/css" media="print">
-  @page {
-    size: auto;
-    margin: 25px 0 25px 0;
-  }
-  </style>
-  <style type="text/css" media="all">
-  table {
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-  table, th, td {
-    border: 1px solid grey;
-  }
-  th, td {
-    text-align: center;
-    vertical-align: middle;
-  }
-  p {
-    font-weight: bold;
-    margin-left:20px;
-  }
-  table {
-    width:94%;
-    margin-left:3%;
-    margin-right:3%;
-  }
-  div.bs-table-print {
-    text-align:center;
-  }
-  </style>
-  </head>
-  <title>Print Table</title>
-  <body>
-  <p>Printed on: ${new Date} </p>
-  <div class="bs-table-print">${table}</div>
-  </body>
-  </html>`
+    <html>
+    <head>
+    ${styles}
+    <style type="text/css" media="print">
+    @page {
+      size: auto;
+      margin: 25px 0 25px 0;
+    }
+    </style>
+    <style type="text/css" media="all">
+    table {
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    table, th, td {
+      border: 1px solid grey;
+    }
+    th, td {
+      text-align: center;
+      vertical-align: middle;
+    }
+    p {
+      font-weight: bold;
+      margin-left:20px;
+    }
+    table {
+      width: 94%;
+      margin-left: 3%;
+      margin-right: 3%;
+    }
+    div.bs-table-print {
+      text-align: center;
+    }
+    </style>
+    </head>
+    <title>Print Table</title>
+    <body>
+    <p>Printed on: ${new Date} </p>
+    <div class="bs-table-print">${table}</div>
+    </body>
+    </html>
+  `
 }
 
-$.extend($.fn.bootstrapTable.locales, {
+Object.assign($.fn.bootstrapTable.locales, {
   formatPrint () {
     return 'Print'
   }
 })
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales)
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales)
 
-$.extend($.fn.bootstrapTable.defaults, {
+Object.assign($.fn.bootstrapTable.defaults, {
   showPrint: false,
   printAsFilteredAndSortedOnUI: true,
   printSortColumn: undefined,
   printSortOrder: 'asc',
-  printPageBuilder (table) {
-    return printPageBuilderDefault(table)
+  printStyles: [],
+  printPageBuilder (table, styles) {
+    return printPageBuilderDefault(table, styles)
   }
 })
 
-$.extend($.fn.bootstrapTable.COLUMN_DEFAULTS, {
+Object.assign($.fn.bootstrapTable.columnDefaults, {
   printFilter: undefined,
   printIgnore: false,
   printFormatter: undefined
 })
 
-$.extend($.fn.bootstrapTable.defaults.icons, {
+Object.assign($.fn.bootstrapTable.defaults.icons, {
   print: {
     bootstrap3: 'glyphicon-print icon-share',
     bootstrap5: 'bi-printer',
@@ -128,19 +131,22 @@ $.BootstrapTable = class extends $.BootstrapTable {
     this.mergedCells.push({
       row: options.index,
       col,
-      rowspan: options.rowspan || 1,
-      colspan: options.colspan || 1
+      rowspan: +options.rowspan || 1,
+      colspan: +options.colspan || 1
     })
   }
 
   doPrint (data) {
+    const canPrint = column => !column.printIgnore && column.visible
+
     const formatValue = (row, i, column) => {
+      const value_ = Utils.getItemField(row, column.field, this.options.escape, column.escape)
       const value = Utils.calculateObjectValue(column,
         column.printFormatter || column.formatter,
-        [row[column.field], row, i], row[column.field])
+        [value_, row, i], value_)
 
       return typeof value === 'undefined' || value === null ?
-        this.options.undefinedText : value
+        this.options.undefinedText : $('<div>').html(value).html()
     }
 
     const buildTable = (data, columnsArray) => {
@@ -150,7 +156,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       for (const columns of columnsArray) {
         html.push('<tr>')
         for (let h = 0; h < columns.length; h++) {
-          if (!columns[h].printIgnore) {
+          if (canPrint(columns[h])) {
             html.push(
               `<th
               ${Utils.sprintf(' rowspan="%s"', columns[h].rowspan)}
@@ -163,7 +169,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
       html.push('</thead><tbody>')
 
-      const dontRender = []
+      const notRender = []
 
       if (this.mergedCells) {
         for (let mc = 0; mc < this.mergedCells.length; mc++) {
@@ -175,7 +181,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
             for (let cs = 0; cs < currentMergedCell.colspan; cs++) {
               const col = currentMergedCell.col + cs
 
-              dontRender.push(`${row },${ col}`)
+              notRender.push(`${row},${col}`)
             }
           }
         }
@@ -186,9 +192,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
         const columns = columnsArray.flat(1)
 
-        columns.sort((c1, c2) => {
-          return c1.colspanIndex - c2.colspanIndex
-        })
+        columns.sort((c1, c2) => c1.colspanIndex - c2.colspanIndex)
 
         for (let j = 0; j < columns.length; j++) {
           if (columns[j].colspanGroup > 0) continue
@@ -208,11 +212,11 @@ $.BootstrapTable = class extends $.BootstrapTable {
           }
 
           if (
-            !columns[j].printIgnore && columns[j].field &&
-              (
-                !dontRender.includes(`${i },${ j}`) ||
-                (rowspan > 0 && colspan > 0)
-              )
+            canPrint(columns[j]) &&
+            (
+              !notRender.includes(`${i},${j}`) ||
+              rowspan > 0 && colspan > 0
+            )
           ) {
             if (rowspan > 0 && colspan > 0) {
               html.push(`<td ${Utils.sprintf(' rowspan="%s"', rowspan)} ${Utils.sprintf(' colspan="%s"', colspan)}>`, formatValue(data[i], i, columns[j]), '</td>')
@@ -221,7 +225,6 @@ $.BootstrapTable = class extends $.BootstrapTable {
             }
           }
         }
-
 
         html.push('</tr>')
       }
@@ -232,7 +235,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
         for (const columns of columnsArray) {
           for (let h = 0; h < columns.length; h++) {
-            if (!columns[h].printIgnore) {
+            if (canPrint(columns)) {
               const footerData = Utils.trToData(columns, this.$el.find('>tfoot>tr'))
               const footerValue = Utils.calculateObjectValue(columns[h], columns[h].footerFormatter, [data], footerData[0] && footerData[0][columns[h].field] || '')
 
@@ -253,8 +256,8 @@ $.BootstrapTable = class extends $.BootstrapTable {
       }
       let reverse = sortOrder !== 'asc'
 
-      reverse = -((+reverse) || -1)
-      return data.sort((a, b) => reverse * (a[colName].localeCompare(b[colName])))
+      reverse = -(+reverse || -1)
+      return data.sort((a, b) => reverse * a[colName].localeCompare(b[colName]))
     }
 
     const filterRow = (row, filters) => {
@@ -276,13 +279,30 @@ $.BootstrapTable = class extends $.BootstrapTable {
     data = sortRows(data, this.options.printSortColumn, this.options.printSortOrder)
     const table = buildTable(data, this.options.columns)
     const newWin = window.open('')
+    const printStyles = typeof this.options.printStyles === 'string' ?
+      this.options.printStyles.replace(/\[|\]| /g, '').toLowerCase().split(',') :
+      this.options.printStyles
+    const styles = printStyles.map(it =>
+      `<link rel="stylesheet" href="${it}" />`).join('')
 
-    const calculatedPrintPage = Utils.calculateObjectValue(this, this.options.printPageBuilder, [table], printPageBuilderDefault(table))
+    const calculatedPrintPage = Utils.calculateObjectValue(this, this.options.printPageBuilder,
+      [table, styles], printPageBuilderDefault(table, styles))
+    const startPrint = () => {
+      newWin.focus()
+      newWin.print()
+      newWin.close()
+    }
 
     newWin.document.write(calculatedPrintPage)
     newWin.document.close()
-    newWin.focus()
-    newWin.print()
-    newWin.close()
+
+    if (printStyles.length) {
+      const links = document.getElementsByTagName('link')
+      const lastLink = links[links.length - 1]
+
+      lastLink.onload = startPrint
+    } else {
+      startPrint()
+    }
   }
 }

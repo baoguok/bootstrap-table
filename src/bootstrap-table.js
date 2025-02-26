@@ -1,6 +1,6 @@
 /**
  * @author zhixin wen <wenzhixin2010@gmail.com>
- * version: 1.20.0
+ * version: 1.24.0
  * https://github.com/wenzhixin/bootstrap-table/
  */
 
@@ -41,10 +41,13 @@ class BootstrapTable {
 
     // init iconsPrefix and icons
     const iconsPrefix = Utils.getIconsPrefix($.fn.bootstrapTable.theme)
-    const icons = Utils.getIcons(iconsPrefix)
+
+    if (typeof opts.icons === 'string') {
+      opts.icons = Utils.calculateObjectValue(null, opts.icons)
+    }
 
     opts.iconsPrefix = opts.iconsPrefix || $.fn.bootstrapTable.defaults.iconsPrefix || iconsPrefix
-    opts.icons = Object.assign(icons, $.fn.bootstrapTable.defaults.icons, opts.icons)
+    opts.icons = Object.assign(Utils.getIcons(opts.iconsPrefix), $.fn.bootstrapTable.defaults.icons, opts.icons)
 
     // init buttons class
     const buttonsPrefix = opts.buttonsPrefix ? `${opts.buttonsPrefix}-` : ''
@@ -58,10 +61,6 @@ class BootstrapTable {
     this.buttons = Utils.calculateObjectValue(this, opts.buttons, [], {})
     if (typeof this.buttons !== 'object') {
       this.buttons = {}
-    }
-
-    if (typeof opts.icons === 'string') {
-      opts.icons = Utils.calculateObjectValue(null, opts.icons)
     }
   }
 
@@ -85,12 +84,17 @@ class BootstrapTable {
         localesToExtend = locales[parts[0]]
       }
 
+      this._defaultLocales = this._defaultLocales || {}
       for (const [formatName, func] of Object.entries(localesToExtend)) {
-        if (this.options[formatName] !== BootstrapTable.DEFAULTS[formatName]) {
+        const defaultLocale = this._defaultLocales.hasOwnProperty(formatName) ?
+          this._defaultLocales[formatName] : BootstrapTable.DEFAULTS[formatName]
+
+        if (this.options[formatName] !== defaultLocale) {
           continue
         }
 
         this.options[formatName] = func
+        this._defaultLocales[formatName] = func
       }
     }
   }
@@ -180,7 +184,16 @@ class BootstrapTable {
         if (typeof $th.data('field') !== 'undefined') {
           $th.data('field', `${$th.data('field')}`)
         }
-        column.push($.extend({}, {
+        const _data = Object.assign({}, $th.data())
+
+        for (const key in _data) {
+          if ($.fn.bootstrapTable.columnDefaults.hasOwnProperty(key)) {
+            delete _data[key]
+          }
+        }
+
+        column.push(Utils.extend({}, {
+          _data: Utils.getRealDataAttr(_data),
           title: $th.html(),
           class: $th.attr('class'),
           titleTooltip: $th.attr('title'),
@@ -202,15 +215,17 @@ class BootstrapTable {
       this.options.columns = [this.options.columns]
     }
 
-    this.options.columns = $.extend(true, [], columns, this.options.columns)
+    this.options.columns = Utils.extend(true, [], columns, this.options.columns)
     this.columns = []
     this.fieldsColumnsIndex = []
 
-    Utils.setFieldIndex(this.options.columns)
+    if (this.optionsColumnsChanged !== false) {
+      Utils.setFieldIndex(this.options.columns)
+    }
 
     this.options.columns.forEach((columns, i) => {
       columns.forEach((_column, j) => {
-        const column = $.extend({}, BootstrapTable.COLUMN_DEFAULTS, _column)
+        const column = Utils.extend({}, BootstrapTable.COLUMN_DEFAULTS, _column, { passed: _column })
 
         if (typeof column.fieldIndex !== 'undefined') {
           this.columns[column.fieldIndex] = column
@@ -263,7 +278,7 @@ class BootstrapTable {
       searchables: []
     }
 
-    Utils.updateFieldGroup(this.options.columns)
+    Utils.updateFieldGroup(this.options.columns, this.columns)
 
     this.options.columns.forEach((columns, i) => {
       const html = []
@@ -286,17 +301,18 @@ class BootstrapTable {
       }
 
       columns.forEach((column, j) => {
-        const class_ = Utils.sprintf(' class="%s"', column['class'])
+        const class_ = Utils.sprintf(' class="%s"', column.class)
         const unitWidth = column.widthUnit
         const width = parseFloat(column.width)
 
-        const halign = Utils.sprintf('text-align: %s; ', column.halign ? column.halign : column.align)
+        const columnHalign = column.halign ? column.halign : column.align
+        const halign = Utils.sprintf('text-align: %s; ', columnHalign)
         const align = Utils.sprintf('text-align: %s; ', column.align)
         let style = Utils.sprintf('vertical-align: %s; ', column.valign)
 
         style += Utils.sprintf('width: %s; ', (column.checkbox || column.radio) && !width ?
-          (!column.showSelectTitle ? '36px' : undefined) :
-          (width ? width + unitWidth : undefined))
+          !column.showSelectTitle ? '36px' : undefined :
+          width ? width + unitWidth : undefined)
 
         if (typeof column.fieldIndex === 'undefined' && !column.visible) {
           return
@@ -304,6 +320,7 @@ class BootstrapTable {
 
         const headerStyle = Utils.calculateObjectValue(null, this.options.headerStyle, [column])
         const csses = []
+        const data_ = []
         let classes = ''
 
         if (headerStyle && headerStyle.css) {
@@ -319,7 +336,7 @@ class BootstrapTable {
         if (typeof column.fieldIndex !== 'undefined') {
           this.header.fields[column.fieldIndex] = column.field
           this.header.styles[column.fieldIndex] = align + style
-          this.header.classes[column.fieldIndex] = class_
+          this.header.classes[column.fieldIndex] = column.class
           this.header.formatters[column.fieldIndex] = column.formatter
           this.header.detailFormatters[column.fieldIndex] = column.detailFormatter
           this.header.events[column.fieldIndex] = column.events
@@ -332,29 +349,36 @@ class BootstrapTable {
             return
           }
 
-          if (this.options.cardView && (!column.cardVisible)) {
+          if (this.options.cardView && !column.cardVisible) {
             return
           }
 
           visibleColumns[column.field] = column
         }
 
+        if (Object.keys(column._data || {}).length > 0) {
+          for (const [k, v] of Object.entries(column._data)) {
+            data_.push(`data-${k}='${typeof v === 'object' ? JSON.stringify(v) : v}'`)
+          }
+        }
+
         html.push(`<th${Utils.sprintf(' title="%s"', column.titleTooltip)}`,
           column.checkbox || column.radio ?
             Utils.sprintf(' class="bs-checkbox %s"', column['class'] || '') :
             classes || class_,
-          Utils.sprintf(' style="%s"', halign + style + csses.join('; ')),
+          Utils.sprintf(' style="%s"', halign + style + csses.join('; ') || undefined),
           Utils.sprintf(' rowspan="%s"', column.rowspan),
           Utils.sprintf(' colspan="%s"', column.colspan),
           Utils.sprintf(' data-field="%s"', column.field),
           // If `column` is not the first element of `this.options.columns[0]`, then className 'data-not-first-th' should be added.
           j === 0 && i > 0 ? ' data-not-first-th' : '',
+          data_.length > 0 ? data_.join(' ') : '',
           '>')
 
-        html.push(Utils.sprintf('<div class="th-inner %s">', this.options.sortable && column.sortable ?
-          'sortable both' : ''))
+        html.push(Utils.sprintf('<div class="th-inner %s">',
+          this.options.sortable && column.sortable ? `sortable${columnHalign === 'center' ? ' sortable-center' : ''} both` : ''))
 
-        let text = this.options.escape ? Utils.escapeHTML(column.title) : column.title
+        let text = this.options.escape && this.options.escapeTitle ? Utils.escapeHTML(column.title) : column.title
 
         const title = text
 
@@ -494,8 +518,7 @@ class BootstrapTable {
             return order * value
           }
 
-          return Utils.sort(aa, bb, order, this.options.sortStable,
-            a._position, b._position)
+          return Utils.sort(aa, bb, order, this.options, a._position, b._position)
         })
       }
 
@@ -513,6 +536,18 @@ class BootstrapTable {
     }
   }
 
+  sortReset () {
+    this.options.sortName = undefined
+    this.options.sortOrder = undefined
+    this._sort()
+  }
+
+  sortBy (params) {
+    this.options.sortName = params.field
+    this.options.sortOrder = params.hasOwnProperty('sortOrder') ? params.sortOrder : 'asc'
+    this._sort()
+  }
+
   onSort ({ type, currentTarget }) {
     const $this = type === 'keypress' ? $(currentTarget) : $(currentTarget).parent()
     const $this_ = this.$header.find('th').eq($this.index())
@@ -521,13 +556,15 @@ class BootstrapTable {
 
     if (this.options.sortName === $this.data('field')) {
       const currentSortOrder = this.options.sortOrder
+      const initialSortOrder = this.columns[this.fieldsColumnsIndex[$this.data('field')]].sortOrder ||
+        this.columns[this.fieldsColumnsIndex[$this.data('field')]].order
 
       if (currentSortOrder === undefined) {
         this.options.sortOrder = 'asc'
       } else if (currentSortOrder === 'asc') {
-        this.options.sortOrder = 'desc'
+        this.options.sortOrder = this.options.sortReset ? initialSortOrder === 'asc' ? 'desc' : undefined : 'desc'
       } else if (this.options.sortOrder === 'desc') {
-        this.options.sortOrder = this.options.sortReset ? undefined : 'asc'
+        this.options.sortOrder = this.options.sortReset ? initialSortOrder === 'desc' ? 'asc' : undefined : 'asc'
       }
 
       if (this.options.sortOrder === undefined) {
@@ -542,19 +579,30 @@ class BootstrapTable {
           this.columns[this.fieldsColumnsIndex[$this.data('field')]].order
       }
     }
-    this.trigger('sort', this.options.sortName, this.options.sortOrder)
 
     $this.add($this_).data('order', this.options.sortOrder)
 
     // Assign the correct sortable arrow
     this.getCaret()
 
+    this._sort()
+  }
+
+  _sort () {
     if (this.options.sidePagination === 'server' && this.options.serverSort) {
       this.options.pageNumber = 1
+
+      this.trigger('sort', this.options.sortName, this.options.sortOrder)
       this.initServer(this.options.silentSort)
       return
     }
 
+    if (this.options.pagination && this.options.sortResetPage) {
+      this.options.pageNumber = 1
+      this.initPagination()
+    }
+
+    this.trigger('sort', this.options.sortName, this.options.sortOrder)
     this.initSort()
     this.initBody()
   }
@@ -611,7 +659,7 @@ class BootstrapTable {
         }
       },
       toggle: {
-        text: opts.formatToggle(),
+        text: opts.formatToggleOn(),
         icon: opts.icons.toggleOff,
         render: false,
         event: this.toggleView,
@@ -632,12 +680,12 @@ class BootstrapTable {
       },
       columns: {
         render: false,
-        html: (() => {
+        html: () => {
           const html = []
 
-          html.push(`<div class="keep-open ${this.constants.classes.buttonsDropdown}" title="${opts.formatColumns()}">
+          html.push(`<div class="keep-open ${this.constants.classes.buttonsDropdown}">
             <button class="${this.constants.buttonsClass} dropdown-toggle" type="button" ${this.constants.dataToggle}="dropdown"
-            aria-label="Columns" title="${opts.formatColumns()}">
+            aria-label="${opts.formatColumns()}" ${opts.buttonsAttributeTitle}="${opts.formatColumns()}">
             ${opts.showButtonIcons ? Utils.sprintf(this.constants.html.icon, opts.iconsPrefix, opts.icons.columns) : ''}
             ${opts.showButtonText ? opts.formatColumns() : ''}
             ${this.constants.html.dropdownCaret}
@@ -684,18 +732,18 @@ class BootstrapTable {
             }
 
             const checked = column.visible ? ' checked="checked"' : ''
-            const disabled = (visibleColumns <= opts.minimumCountColumns) && checked ? ' disabled="disabled"' : ''
+            const disabled = visibleColumns <= opts.minimumCountColumns && checked ? ' disabled="disabled"' : ''
 
             if (column.switchable) {
               html.push(Utils.sprintf(this.constants.html.toolbarDropdownItem,
                 Utils.sprintf('<input type="checkbox" data-field="%s" value="%s"%s%s> <span>%s</span>',
-                  column.field, i, checked, disabled, column.title)))
+                  column.field, i, checked, disabled, column.switchableLabel || column.title)))
               switchableCount++
             }
           })
           html.push(this.constants.html.toolbarDropdown[1], '</div>')
           return html.join('')
-        })
+        }
       }
     })
 
@@ -711,18 +759,30 @@ class BootstrapTable {
           buttonHtml = buttonConfig.html
         }
       } else {
-        buttonHtml = `<button class="${this.constants.buttonsClass}" type="button" name="${buttonName}"`
+        let buttonClass = this.constants.buttonsClass
+
+        if (buttonConfig.hasOwnProperty('attributes') && buttonConfig.attributes.class) {
+          buttonClass += ` ${buttonConfig.attributes.class}`
+        }
+        buttonHtml = `<button class="${buttonClass}" type="button" name="${buttonName}"`
 
         if (buttonConfig.hasOwnProperty('attributes')) {
           for (const [attributeName, value] of Object.entries(buttonConfig.attributes)) {
-            buttonHtml += ` ${attributeName}="${value}"`
+            if (attributeName === 'class') {
+              continue
+            }
+
+            const attribute = attributeName === 'title' ?
+              this.options.buttonsAttributeTitle : attributeName
+
+            buttonHtml += ` ${attribute}="${value}"`
           }
         }
 
         buttonHtml += '>'
 
         if (opts.showButtonIcons && buttonConfig.hasOwnProperty('icon')) {
-          buttonHtml += `${Utils.sprintf(this.constants.html.icon, opts.iconsPrefix, buttonConfig.icon) } `
+          buttonHtml += `${Utils.sprintf(this.constants.html.icon, opts.iconsPrefix, buttonConfig.icon)} `
         }
 
         if (opts.showButtonText && buttonConfig.hasOwnProperty('text')) {
@@ -835,7 +895,7 @@ class BootstrapTable {
       }
     }
     const handleInputEvent = $searchInput => {
-      const eventTriggers = 'keyup drop blur mouseup'
+      const eventTriggers = $searchInput.is('select') ? 'change' : 'keyup drop blur mouseup'
 
       $searchInput.off(eventTriggers).on(eventTriggers, event => {
         if (opts.searchOnEnterKey && event.keyCode !== 13) {
@@ -873,7 +933,7 @@ class BootstrapTable {
       )
       const searchInputHtml = `<input class="${this.constants.classes.input}
         ${Utils.sprintf(' %s%s', this.constants.classes.inputPrefix, opts.iconSize)}
-        search-input" type="search" placeholder="${opts.formatSearch()}" autocomplete="off">`
+        search-input" type="search" aria-label="${opts.formatSearch()}" placeholder="${opts.formatSearch()}" autocomplete="off">`
       let searchInputFinalHtml = searchInputHtml
 
       if (opts.showSearchButton || opts.showSearchClearButton) {
@@ -914,9 +974,7 @@ class BootstrapTable {
         })
       }
     } else if (typeof opts.searchSelector === 'string') {
-      const $searchInput = Utils.getSearchInput(this)
-
-      handleInputEvent($searchInput)
+      handleInputEvent(Utils.getSearchInput(this))
     }
   }
 
@@ -941,7 +999,7 @@ class BootstrapTable {
       }
     }
 
-    if (!firedByInitSearchText && !this.options.cookie) {
+    if (!firedByInitSearchText) {
       this.options.pageNumber = 1
     }
     this.initSearch()
@@ -965,6 +1023,8 @@ class BootstrapTable {
         if (this.options.sortReset) {
           this.unsortedData = [...this.data]
         }
+
+        this.initSort()
         return
       }
 
@@ -986,10 +1046,10 @@ class BootstrapTable {
           if (filterAlgorithm === 'and') {
             for (const key in f) {
               if (
-                (Array.isArray(f[key]) &&
-                  !f[key].includes(item[key])) ||
-                (!Array.isArray(f[key]) &&
-                  item[key] !== f[key])
+                Array.isArray(f[key]) &&
+                  !f[key].includes(item[key]) ||
+                !Array.isArray(f[key]) &&
+                  item[key] !== f[key]
               ) {
                 return false
               }
@@ -999,10 +1059,10 @@ class BootstrapTable {
 
             for (const key in f) {
               if (
-                (Array.isArray(f[key]) &&
-                  f[key].includes(item[key])) ||
-                (!Array.isArray(f[key]) &&
-                  item[key] === f[key])
+                Array.isArray(f[key]) &&
+                  f[key].includes(item[key]) ||
+                !Array.isArray(f[key]) &&
+                  item[key] === f[key]
               ) {
                 match = true
               }
@@ -1019,7 +1079,7 @@ class BootstrapTable {
 
       this.data = searchText ? this.data.filter((item, i) => {
         for (let j = 0; j < this.header.fields.length; j++) {
-          if (!this.header.searchables[j] || (this.options.visibleSearch && visibleFields.indexOf(this.header.fields[j]) === -1)) {
+          if (!this.header.searchables[j] || this.options.visibleSearch && visibleFields.indexOf(this.header.fields[j]) === -1) {
             continue
           }
 
@@ -1027,12 +1087,15 @@ class BootstrapTable {
           const column = this.columns[this.fieldsColumnsIndex[key]]
           let value
 
-          if (typeof key === 'string') {
+          if (typeof key === 'string' && !item.hasOwnProperty(key)) {
             value = item
             const props = key.split('.')
 
             for (let i = 0; i < props.length; i++) {
-              if (value[props[i]] !== null) {
+              if (value[props[i]] === null || value[props[i]] === undefined) {
+                value = null
+                break
+              } else {
                 value = value[props[i]]
               }
             }
@@ -1048,54 +1111,61 @@ class BootstrapTable {
           if (column && column.searchFormatter) {
             value = Utils.calculateObjectValue(column,
               this.header.formatters[j], [value, item, i, column.field], value)
+            if (this.header.formatters[j] && typeof value !== 'number') {
+              // search innerText
+              value = $('<div>').html(value).text()
+            }
           }
 
           if (typeof value === 'string' || typeof value === 'number') {
-            if (
-              this.options.strictSearch && (`${value}`).toLowerCase() === searchText ||
-              (this.options.regexSearch && Utils.regexCompare(value, rawSearchText))
-            ) {
-              return true
-            }
-
-            const largerSmallerEqualsRegex = /(?:(<=|=>|=<|>=|>|<)(?:\s+)?(-?\d+)?|(-?\d+)?(\s+)?(<=|=>|=<|>=|>|<))/gm
-            const matches = largerSmallerEqualsRegex.exec(this.searchText)
-            let comparisonCheck = false
-
-            if (matches) {
-              const operator = matches[1] || `${matches[5]}l`
-              const comparisonValue = matches[2] || matches[3]
-              const int = parseInt(value, 10)
-              const comparisonInt = parseInt(comparisonValue, 10)
-
-              switch (operator) {
-                case '>':
-                case '<l':
-                  comparisonCheck = int > comparisonInt
-                  break
-                case '<':
-                case '>l':
-                  comparisonCheck = int < comparisonInt
-                  break
-                case '<=':
-                case '=<':
-                case '>=l':
-                case '=>l':
-                  comparisonCheck = int <= comparisonInt
-                  break
-                case '>=':
-                case '=>':
-                case '<=l':
-                case '=<l':
-                  comparisonCheck = int >= comparisonInt
-                  break
-                default:
-                  break
+            if (this.options.strictSearch) {
+              if (`${value}`.toLowerCase() === searchText) {
+                return true
               }
-            }
+            } else if (this.options.regexSearch) {
+              if (Utils.regexCompare(value, rawSearchText)) {
+                return true
+              }
+            } else {
+              const largerSmallerEqualsRegex = /(?:(<=|=>|=<|>=|>|<)(?:\s+)?(-?\d+)?|(-?\d+)?(\s+)?(<=|=>|=<|>=|>|<))/gm
+              const matches = largerSmallerEqualsRegex.exec(this.searchText)
+              let comparisonCheck = false
 
-            if (comparisonCheck || (`${value}`).toLowerCase().includes(searchText)) {
-              return true
+              if (matches) {
+                const operator = matches[1] || `${matches[5]}l`
+                const comparisonValue = matches[2] || matches[3]
+                const int = parseInt(value, 10)
+                const comparisonInt = parseInt(comparisonValue, 10)
+
+                switch (operator) {
+                  case '>':
+                  case '<l':
+                    comparisonCheck = int > comparisonInt
+                    break
+                  case '<':
+                  case '>l':
+                    comparisonCheck = int < comparisonInt
+                    break
+                  case '<=':
+                  case '=<':
+                  case '>=l':
+                  case '=>l':
+                    comparisonCheck = int <= comparisonInt
+                    break
+                  case '>=':
+                  case '=>':
+                  case '<=l':
+                  case '=<l':
+                    comparisonCheck = int >= comparisonInt
+                    break
+                  default:
+                    break
+                }
+              }
+
+              if (comparisonCheck || `${value}`.toLowerCase().includes(searchText)) {
+                return true
+              }
             }
           }
         }
@@ -1137,8 +1207,8 @@ class BootstrapTable {
 
     pageList = pageList.map(value => {
       if (typeof value === 'string') {
-        return (value.toLowerCase() === opts.formatAllRows().toLowerCase() ||
-          ['all', 'unlimited'].includes(value.toLowerCase())) ? opts.formatAllRows() : +value
+        return value.toLowerCase() === opts.formatAllRows().toLowerCase() ||
+          ['all', 'unlimited'].includes(value.toLowerCase()) ? opts.formatAllRows() : +value
       }
       return value
     })
@@ -1186,7 +1256,14 @@ class BootstrapTable {
     }
 
     if (this.paginationParts.includes('pageInfo') || this.paginationParts.includes('pageInfoShort')) {
-      const paginationInfo = this.paginationParts.includes('pageInfoShort') ? opts.formatDetailPagination(opts.totalRows) : opts.formatShowingRows(this.pageFrom, this.pageTo, opts.totalRows, opts.totalNotFiltered)
+      const totalRows = this.options.totalRows +
+        (this.options.sidePagination === 'client' &&
+        this.options.paginationLoadMore &&
+        !this._paginationLoaded &&
+        this.totalPages > 1 ? ' +' : '')
+      const paginationInfo = this.paginationParts.includes('pageInfoShort') ?
+        opts.formatDetailPagination(totalRows) :
+        opts.formatShowingRows(this.pageFrom, this.pageTo, totalRows, opts.totalNotFiltered)
 
       html.push(`<span class="pagination-info">
       ${paginationInfo}
@@ -1238,10 +1315,10 @@ class BootstrapTable {
         to = this.totalPages
       } else {
         from = opts.pageNumber - opts.paginationPagesBySide
-        to = from + (opts.paginationPagesBySide * 2)
+        to = from + opts.paginationPagesBySide * 2
       }
 
-      if (opts.pageNumber < (opts.paginationSuccessivelySize - 1)) {
+      if (opts.pageNumber < opts.paginationSuccessivelySize - 1) {
         to = opts.paginationSuccessivelySize
       }
 
@@ -1268,15 +1345,15 @@ class BootstrapTable {
         for (i = 1; i <= max; i++) {
           html.push(pageItem(i))
         }
-        if ((from - 1) === max + 1) {
+        if (from - 1 === max + 1) {
           i = from - 1
           html.push(pageItem(i))
-        } else if ((from - 1) > max) {
+        } else if (from - 1 > max) {
           if (
-            (from - opts.paginationPagesBySide * 2) > opts.paginationPagesBySide &&
+            from - opts.paginationPagesBySide * 2 > opts.paginationPagesBySide &&
               opts.paginationUseIntermediate
           ) {
-            i = Math.round(((from - middleSize) / 2) + middleSize)
+            i = Math.round((from - middleSize) / 2 + middleSize)
             html.push(pageItem(i, ' page-intermediate'))
           } else {
             html.push(Utils.sprintf(this.constants.html.paginationItem,
@@ -1293,15 +1370,15 @@ class BootstrapTable {
         let min = this.totalPages - (opts.paginationPagesBySide - 1)
 
         if (to >= min) min = to + 1
-        if ((to + 1) === min - 1) {
+        if (to + 1 === min - 1) {
           i = to + 1
           html.push(pageItem(i))
-        } else if (min > (to + 1)) {
+        } else if (min > to + 1) {
           if (
-            (this.totalPages - to) > opts.paginationPagesBySide * 2 &&
+            this.totalPages - to > opts.paginationPagesBySide * 2 &&
               opts.paginationUseIntermediate
           ) {
-            i = Math.round(((this.totalPages - middleSize - to) / 2) + to)
+            i = Math.round((this.totalPages - middleSize - to) / 2 + to)
             html.push(pageItem(i, ' page-intermediate'))
           } else {
             html.push(Utils.sprintf(this.constants.html.paginationItem,
@@ -1355,7 +1432,6 @@ class BootstrapTable {
       if (allSelected) {
         opts.pageSize = opts.formatAllRows()
       }
-      // removed the events for last and first, onPageNumber executeds the same logic
       $pageList.off('click').on('click', e => this.onPageListChange(e))
       $pre.off('click').on('click', e => this.onPagePre(e))
       $next.off('click').on('click', e => this.onPageNext(e))
@@ -1377,7 +1453,13 @@ class BootstrapTable {
 
     this.trigger('page-change', this.options.pageNumber, this.options.pageSize)
 
-    if (this.options.sidePagination === 'server') {
+    if (
+      this.options.sidePagination === 'server' ||
+      this.options.sidePagination === 'client' &&
+      this.options.paginationLoadMore &&
+      !this._paginationLoaded &&
+      this.options.pageNumber === this.totalPages
+    ) {
       this.initServer()
     } else {
       this.initBody()
@@ -1403,7 +1485,7 @@ class BootstrapTable {
       return
     }
     event.preventDefault()
-    if ((this.options.pageNumber - 1) === 0) {
+    if (this.options.pageNumber - 1 === 0) {
       this.options.pageNumber = this.options.totalPages
     } else {
       this.options.pageNumber--
@@ -1417,7 +1499,7 @@ class BootstrapTable {
       return
     }
     event.preventDefault()
-    if ((this.options.pageNumber + 1) > this.options.totalPages) {
+    if (this.options.pageNumber + 1 > this.options.totalPages) {
       this.options.pageNumber = 1
     } else {
       this.options.pageNumber++
@@ -1438,33 +1520,13 @@ class BootstrapTable {
 
   // eslint-disable-next-line no-unused-vars
   initRow (item, i, data, trFragments) {
-    const html = []
-    let style = {}
-    const csses = []
-    let data_ = ''
-    let attributes = {}
-    const htmlAttributes = []
-
     if (Utils.findIndex(this.hiddenRows, item) > -1) {
       return
     }
-
-    style = Utils.calculateObjectValue(this.options, this.options.rowStyle, [item, i], style)
-
-    if (style && style.css) {
-      for (const [key, value] of Object.entries(style.css)) {
-        csses.push(`${key}: ${value}`)
-      }
-    }
-
-    attributes = Utils.calculateObjectValue(this.options,
-      this.options.rowAttributes, [item, i], attributes)
-
-    if (attributes) {
-      for (const [key, value] of Object.entries(attributes)) {
-        htmlAttributes.push(`${key}="${Utils.escapeHTML(value)}"`)
-      }
-    }
+    const style = Utils.calculateObjectValue(this.options, this.options.rowStyle, [item, i], {})
+    const attributes = Utils.calculateObjectValue(this.options,
+      this.options.rowAttributes, [item, i], {})
+    const data_ = {}
 
     if (item._data && !Utils.isEmptyObject(item._data)) {
       for (const [k, v] of Object.entries(item._data)) {
@@ -1472,64 +1534,51 @@ class BootstrapTable {
         if (k === 'index') {
           return
         }
-        data_ += ` data-${k}='${typeof v === 'object' ? JSON.stringify(v) : v}'`
+        data_[`data-${k}`] = typeof v === 'object' ? JSON.stringify(v) : v
       }
     }
-
-    html.push('<tr',
-      Utils.sprintf(' %s', htmlAttributes.length ? htmlAttributes.join(' ') : undefined),
-      Utils.sprintf(' id="%s"', Array.isArray(item) ? undefined : item._id),
-      Utils.sprintf(' class="%s"', style.classes || (Array.isArray(item) ? undefined : item._class)),
-      Utils.sprintf(' style="%s"', Array.isArray(item) ? undefined : item._style),
-      ` data-index="${i}"`,
-      Utils.sprintf(' data-uniqueid="%s"', Utils.getItemField(item, this.options.uniqueId, false)),
-      Utils.sprintf(' data-has-detail-view="%s"', (this.options.detailView && Utils.calculateObjectValue(null, this.options.detailFilter, [i, item])) ? 'true' : undefined),
-      Utils.sprintf('%s', data_),
-      '>'
-    )
-
-    if (this.options.cardView) {
-      html.push(`<td colspan="${this.header.fields.length}"><div class="card-views">`)
-    }
-
+    const tr = Utils.h('tr', {
+      id: Array.isArray(item) ? undefined : item._id,
+      class: style && style.classes || (Array.isArray(item) ? undefined : item._class),
+      style: style && style.css || (Array.isArray(item) ? undefined : item._style),
+      'data-index': i,
+      'data-uniqueid': Utils.getItemField(item, this.options.uniqueId, false),
+      'data-has-detail-view': this.options.detailView &&
+        Utils.calculateObjectValue(null, this.options.detailFilter, [i, item]) ? 'true' : undefined,
+      ...attributes,
+      ...data_
+    })
+    const trChildren = []
     let detailViewTemplate = ''
 
     if (Utils.hasDetailViewIcon(this.options)) {
-      detailViewTemplate = '<td>'
+      detailViewTemplate = Utils.h('td')
 
       if (Utils.calculateObjectValue(null, this.options.detailFilter, [i, item])) {
-        detailViewTemplate += `
-          <a class="detail-icon" href="#">
-          ${Utils.sprintf(this.constants.html.icon, this.options.iconsPrefix, this.options.icons.detailOpen)}
-          </a>
-        `
+        detailViewTemplate.append(Utils.h('a', {
+          class: 'detail-icon',
+          href: '#',
+          html: Utils.sprintf(this.constants.html.icon, this.options.iconsPrefix, this.options.icons.detailOpen)
+        }))
       }
-
-      detailViewTemplate += '</td>'
     }
 
     if (detailViewTemplate && this.options.detailViewAlign !== 'right') {
-      html.push(detailViewTemplate)
+      trChildren.push(detailViewTemplate)
     }
 
-    this.header.fields.forEach((field, j) => {
+    const tds = this.header.fields.map((field, j) => {
       const column = this.columns[j]
-      let text = ''
-      let value_ = Utils.getItemField(item, field, this.options.escape, column.escape)
+      const value_ = Utils.getItemField(item, field, this.options.escape, column.escape)
       let value = ''
-      let type = ''
-      let cellStyle = {}
-      let id_ = ''
-      let class_ = this.header.classes[j]
-      let style_ = ''
-      let styleToAdd_ = ''
-      let data_ = ''
-      let rowspan_ = ''
-      let colspan_ = ''
-      let title_ = ''
+      const attrs = {
+        class: this.header.classes[j] ? [this.header.classes[j]] : [],
+        style: this.header.styles[j] ? [this.header.styles[j]] : []
+      }
+      const cardViewClass = `card-view card-view-field-${field}`
 
       if ((this.fromHtml || this.autoMergeCells) && typeof value_ === 'undefined') {
-        if ((!column.checkbox) && (!column.radio)) {
+        if (!column.checkbox && !column.radio) {
           return
         }
       }
@@ -1538,55 +1587,32 @@ class BootstrapTable {
         return
       }
 
-      if (this.options.cardView && (!column.cardVisible)) {
+      if (this.options.cardView && !column.cardVisible) {
         return
       }
 
-      if (column.escape) {
-        value_ = Utils.escapeHTML(value_)
+      // handle class, style, id, rowspan, colspan and title of td
+      for (const attr of ['class', 'style', 'id', 'rowspan', 'colspan', 'title']) {
+        const value = item[`_${field}_${attr}`]
+
+        if (!value) {
+          continue
+        }
+        if (attrs[attr]) {
+          attrs[attr].push(value)
+        } else {
+          attrs[attr] = value
+        }
       }
 
-      // Style concat
-      if (csses.concat([this.header.styles[j]]).length) {
-        styleToAdd_ += `${csses.concat([this.header.styles[j]]).join('; ')}`
-      }
-      if (item[`_${field}_style`]) {
-        styleToAdd_ += `${item[`_${field}_style`]}`
-      }
+      const cellStyle = Utils.calculateObjectValue(this.header,
+        this.header.cellStyles[j], [value_, item, i, field], {})
 
-      if (styleToAdd_) {
-        style_ = ` style="${styleToAdd_}"`
-      }
-      // Style concat
-
-      // handle id and class of td
-      if (item[`_${field}_id`]) {
-        id_ = Utils.sprintf(' id="%s"', item[`_${field}_id`])
-      }
-      if (item[`_${field}_class`]) {
-        class_ = Utils.sprintf(' class="%s"', item[`_${field}_class`])
-      }
-      if (item[`_${field}_rowspan`]) {
-        rowspan_ = Utils.sprintf(' rowspan="%s"', item[`_${field}_rowspan`])
-      }
-      if (item[`_${field}_colspan`]) {
-        colspan_ = Utils.sprintf(' colspan="%s"', item[`_${field}_colspan`])
-      }
-      if (item[`_${field}_title`]) {
-        title_ = Utils.sprintf(' title="%s"', item[`_${field}_title`])
-      }
-      cellStyle = Utils.calculateObjectValue(this.header,
-        this.header.cellStyles[j], [value_, item, i, field], cellStyle)
       if (cellStyle.classes) {
-        class_ = ` class="${cellStyle.classes}"`
+        attrs.class.push(cellStyle.classes)
       }
       if (cellStyle.css) {
-        const csses_ = []
-
-        for (const [key, value] of Object.entries(cellStyle.css)) {
-          csses_.push(`${key}: ${value}`)
-        }
-        style_ = ` style="${csses_.concat(this.header.styles[j]).join('; ')}"`
+        attrs.style.push(cellStyle.css)
       }
 
       value = Utils.calculateObjectValue(column,
@@ -1597,24 +1623,27 @@ class BootstrapTable {
           this.options.undefinedText : value
       }
 
-      if (column.searchable && this.searchText && this.options.searchHighlight && !(column.checkbox || column.radio)) {
-        let defValue = ''
-        const regExp = new RegExp(`(${ this.searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') })`, 'gim')
-        const marker = '<mark>$1</mark>'
-        const isHTML = value && /<(?=.*? .*?\/ ?>|br|hr|input|!--|wbr)[a-z]+.*?>|<([a-z]+).*?<\/\1>/i.test(value)
+      if (
+        column.searchable &&
+        this.searchText &&
+        this.options.searchHighlight &&
+        !(column.checkbox || column.radio)
+      ) {
+        let searchText = this.searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-        if (isHTML) {
-          // value can contains a HTML tags
-          let textContent = new DOMParser().parseFromString(value.toString(), 'text/html').documentElement.textContent
-          const textReplaced = textContent.replace(regExp, marker)
+        if (this.options.searchAccentNeutralise && typeof value === 'string') {
+          const indexRegex = new RegExp(`${Utils.normalizeAccent(searchText)}`, 'gmi')
+          const match = indexRegex.exec(Utils.normalizeAccent(value))
 
-          textContent = textContent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-          defValue = value.replace(new RegExp(`(>\\s*)(${textContent})(\\s*)`, 'gm'), `$1${textReplaced}$3`)
-        } else {
-          // but usually not
-          defValue = value.toString().replace(regExp, marker)
+          if (match) {
+            searchText = value.substring(match.index, match.index + searchText.length)
+          }
         }
-        value = Utils.calculateObjectValue(column, column.searchHighlightFormatter, [value, this.searchText], defValue)
+
+        const defValue = Utils.replaceSearchMark(value, searchText)
+
+        value = Utils.calculateObjectValue(column, column.searchHighlightFormatter,
+          [value, this.searchText], defValue)
       }
 
       if (item[`_${field}_data`] && !Utils.isEmptyObject(item[`_${field}_data`])) {
@@ -1623,64 +1652,80 @@ class BootstrapTable {
           if (k === 'index') {
             return
           }
-          data_ += ` data-${k}="${v}"`
+          attrs[`data-${k}`] = v
         }
       }
 
       if (column.checkbox || column.radio) {
-        type = column.checkbox ? 'checkbox' : type
-        type = column.radio ? 'radio' : type
-
-        const c = column['class'] || ''
+        const type = column.checkbox ? 'checkbox' : 'radio'
         const isChecked = Utils.isObject(value) && value.hasOwnProperty('checked') ?
           value.checked : (value === true || value_) && value !== false
-        const isDisabled = !column.checkboxEnabled || (value && value.disabled)
+        const isDisabled = !column.checkboxEnabled || value && value.disabled
+        const valueNodes = this.header.formatters[j] && (
+          typeof value === 'string' || value instanceof Node || value instanceof $) ? Utils.htmlToNodes(value) : []
 
-        text = [
-          this.options.cardView ?
-            `<div class="card-view ${c}">` :
-            `<td class="bs-checkbox ${c}"${class_}${style_}>`,
-          `<label>
-            <input
-            data-index="${i}"
-            name="${this.options.selectItemName}"
-            type="${type}"
-            ${Utils.sprintf('value="%s"', item[this.options.idField])}
-            ${Utils.sprintf('checked="%s"', isChecked ? 'checked' : undefined)}
-            ${Utils.sprintf('disabled="%s"', isDisabled ? 'disabled' : undefined)} />
-            <span></span>
-            </label>`,
-          this.header.formatters[j] && typeof value === 'string' ? value : '',
-          this.options.cardView ? '</div>' : '</td>'
-        ].join('')
+        item[this.header.stateField] = value === true || (!!value_ || value && value.checked)
 
-        item[this.header.stateField] = value === true || (!!value_ || (value && value.checked))
-      } else if (this.options.cardView) {
-        const cardTitle = this.options.showHeader ?
-          `<span class="card-view-title ${cellStyle.classes || ''}"${style_}>${Utils.getFieldTitle(this.columns, field)}</span>` : ''
-
-        text = `<div class="card-view">${cardTitle}<span class="card-view-value ${cellStyle.classes || ''}"${style_}>${value}</span></div>`
-
-        if (this.options.smartDisplay && value === '') {
-          text = '<div class="card-view"></div>'
-        }
-      } else {
-        text = `<td${id_}${class_}${style_}${data_}${rowspan_}${colspan_}${title_}>${value}</td>`
+        return Utils.h(this.options.cardView ? 'div' : 'td', {
+          class: [this.options.cardView ? cardViewClass : 'bs-checkbox', column.class],
+          style: this.options.cardView ? undefined : attrs.style
+        }, [
+          Utils.h('label', {}, [
+            Utils.h('input', {
+              'data-index': i,
+              name: this.options.selectItemName,
+              type,
+              value: item[this.options.idField],
+              checked: isChecked ? 'checked' : undefined,
+              disabled: isDisabled ? 'disabled' : undefined
+            }),
+            Utils.h('span')
+          ]),
+          ...valueNodes
+        ])
       }
 
-      html.push(text)
-    })
+      if (this.options.cardView) {
+        if (this.options.smartDisplay && value === '') {
+          return Utils.h('div', { class: cardViewClass })
+        }
+
+        const cardTitle = this.options.showHeader ?
+          Utils.h('span', {
+            class: ['card-view-title', cellStyle.classes],
+            style: attrs.style,
+            html: Utils.getFieldTitle(this.columns, field)
+          }) : ''
+
+        return Utils.h('div', { class: cardViewClass }, [
+          cardTitle,
+          Utils.h('span', {
+            class: ['card-view-value', cellStyle.classes],
+            style: attrs.style
+          }, [...Utils.htmlToNodes(value)])
+        ])
+      }
+
+      return Utils.h('td', attrs, [...Utils.htmlToNodes(value)])
+    }).filter(x => x)
+
+    trChildren.push(...tds)
 
     if (detailViewTemplate && this.options.detailViewAlign === 'right') {
-      html.push(detailViewTemplate)
+      trChildren.push(detailViewTemplate)
     }
 
     if (this.options.cardView) {
-      html.push('</div></td>')
+      tr.append(Utils.h('td', {
+        colspan: this.header.fields.length
+      }, [
+        Utils.h('div', { class: 'card-views' }, trChildren)
+      ]))
+    } else {
+      tr.append(...trChildren)
     }
-    html.push('</tr>')
 
-    return html.join('')
+    return tr
   }
 
   initBody (fixedScroll, updatedUid) {
@@ -1708,12 +1753,13 @@ class BootstrapTable {
 
     for (let i = this.pageFrom - 1; i < this.pageTo; i++) {
       const item = data[i]
-      let tr = this.initRow(item, i, data, trFragments)
+      const tr = this.initRow(item, i, data, trFragments)
 
       hasTr = hasTr || !!tr
-      if (tr && typeof tr === 'string') {
+      if (tr && tr instanceof Node) {
 
         const uniqueId = this.options.uniqueId
+        const toAppend = [tr]
 
         if (uniqueId && item.hasOwnProperty(uniqueId)) {
           const itemUniqueId = item[uniqueId]
@@ -1726,24 +1772,27 @@ class BootstrapTable {
             toExpand.push(i)
 
             if (!updatedUid || itemUniqueId !== updatedUid) {
-              tr += oldTrNext[0].outerHTML
+              toAppend.push(oldTrNext[0])
             }
           }
         }
 
         if (!this.options.virtualScroll) {
-          trFragments.append(tr)
+          trFragments.append(toAppend)
         } else {
-          rows.push(tr)
+          rows.push($('<div>').html(toAppend).html())
         }
       }
     }
+
+    this.$el.removeAttr('role')
 
     // show no records
     if (!hasTr) {
       this.$body.html(`<tr class="no-records-found">${Utils.sprintf('<td colspan="%s">%s</td>',
         this.getVisibleFields().length + Utils.getDetailViewIndexOffset(this.options),
         this.options.formatNoMatches())}</tr>`)
+      this.$el.attr('role', 'presentation')
     } else if (!this.options.virtualScroll) {
       this.$body.html(trFragments)
     } else {
@@ -1764,7 +1813,9 @@ class BootstrapTable {
       })
     }
 
-    toExpand.forEach(index => { this.expandRow(index) })
+    toExpand.forEach(index => {
+      this.expandRow(index)
+    })
 
     if (!fixedScroll) {
       this.scrollTo(0)
@@ -1786,6 +1837,14 @@ class BootstrapTable {
     // click to select by column
     this.$body.find('> tr[data-index] > td').off('click dblclick').on('click dblclick', e => {
       const $td = $(e.currentTarget)
+
+      if (
+        $td.find('.detail-icon').length ||
+        $td.index() - Utils.getDetailViewIndexOffset(this.options) < 0
+      ) {
+        return
+      }
+
       const $tr = $td.parent()
       const $cardViewArr = $(e.target).parents('.card-views').children()
       const $cardViewTarget = $(e.target).parents('.card-view')
@@ -1796,10 +1855,6 @@ class BootstrapTable {
       const field = fields[index - Utils.getDetailViewIndexOffset(this.options)]
       const column = this.columns[this.fieldsColumnsIndex[field]]
       const value = Utils.getItemField(item, field, this.options.escape, column.escape)
-
-      if ($td.find('.detail-icon').length) {
-        return
-      }
 
       this.trigger(e.type === 'click' ? 'click-cell' : 'dbl-click-cell', field, value, item, $td)
       this.trigger(e.type === 'click' ? 'click-row' : 'dbl-click-row', item, $tr, field)
@@ -1891,7 +1946,7 @@ class BootstrapTable {
     })
   }
 
-  initServer (silent, query, url) {
+  initServer (silent, query) {
     let data = {}
     const index = this.header.fields.indexOf(this.options.sortName)
 
@@ -1911,7 +1966,7 @@ class BootstrapTable {
       params.pageNumber = this.options.pageNumber
     }
 
-    if (!(url || this.options.url) && !this.options.ajax) {
+    if (!this.options.url && !this.options.ajax) {
       return
     }
 
@@ -1935,7 +1990,8 @@ class BootstrapTable {
     if (
       this.options.search &&
       this.options.sidePagination === 'server' &&
-      this.columns.filter(column => !column.searchable).length
+      this.options.searchable &&
+      this.columns.filter(column => column.searchable).length
     ) {
       params.searchable = []
 
@@ -1954,11 +2010,11 @@ class BootstrapTable {
       }
     }
 
-    if (!(Utils.isEmptyObject(this.filterColumnsPartial))) {
+    if (!Utils.isEmptyObject(this.filterColumnsPartial)) {
       params.filter = JSON.stringify(this.filterColumnsPartial, null)
     }
 
-    $.extend(params, query || {})
+    Utils.extend(params, query || {})
 
     data = Utils.calculateObjectValue(this.options, this.options.queryParams, [params], data)
 
@@ -1970,9 +2026,9 @@ class BootstrapTable {
     if (!silent) {
       this.showLoading()
     }
-    const request = $.extend({}, Utils.calculateObjectValue(null, this.options.ajaxOptions), {
+    const request = Utils.extend({}, Utils.calculateObjectValue(null, this.options.ajaxOptions), {
       type: this.options.method,
-      url: url || this.options.url,
+      url: this.options.url,
       data: this.options.contentType === 'application/json' && this.options.method === 'post' ?
         JSON.stringify(data) : data,
       cache: this.options.cache,
@@ -1981,6 +2037,13 @@ class BootstrapTable {
       success: (_res, textStatus, jqXHR) => {
         const res = Utils.calculateObjectValue(this.options,
           this.options.responseHandler, [_res, jqXHR], _res)
+
+        if (
+          this.options.sidePagination === 'client' &&
+          this.options.paginationLoadMore
+        ) {
+          this._paginationLoaded = this.data.length === res.length
+        }
 
         this.load(res)
         this.trigger('load-success', res, jqXHR && jqXHR.status, jqXHR)
@@ -2111,7 +2174,7 @@ class BootstrapTable {
 
     this.$el.css('margin-top', -this.$header.outerHeight())
 
-    const focused = $(':focus')
+    const focused = this.$tableHeader.find(':focus')
 
     if (focused.length > 0) {
       const $th = focused.parents('th')
@@ -2203,7 +2266,10 @@ class BootstrapTable {
     let detailTemplate = ''
 
     if (Utils.hasDetailViewIcon(this.options)) {
-      detailTemplate = '<th class="detail"><div class="th-inner"></div><div class="fht-cell"></div></th>'
+      detailTemplate = Utils.h('th', { class: 'detail' }, [
+        Utils.h('div', { class: 'th-inner' }),
+        Utils.h('div', { class: 'fht-cell' })
+      ])
     }
 
     if (detailTemplate && this.options.detailViewAlign !== 'right') {
@@ -2211,63 +2277,41 @@ class BootstrapTable {
     }
 
     for (const column of this.columns) {
-      let falign = ''
-      let valign = ''
-      const csses = []
-      let style = {}
-      let class_ = Utils.sprintf(' class="%s"', column['class'])
+      const hasData = this.footerData && this.footerData.length > 0
 
       if (
         !column.visible ||
-        (this.footerData && this.footerData.length > 0 && !(column.field in this.footerData[0]))
+        hasData && !(column.field in this.footerData[0])
       ) {
         continue
       }
 
-      if (this.options.cardView && (!column.cardVisible)) {
+      if (this.options.cardView && !column.cardVisible) {
         return
       }
 
-      falign = Utils.sprintf('text-align: %s; ', column.falign ? column.falign : column.align)
-      valign = Utils.sprintf('vertical-align: %s; ', column.valign)
+      const style = Utils.calculateObjectValue(null, column.footerStyle || this.options.footerStyle, [column])
+      const csses = style && style.css || {}
+      const colspan = hasData && this.footerData[0][`_${column.field}_colspan`] || 0
+      let value = hasData && this.footerData[0][column.field] || ''
 
-      style = Utils.calculateObjectValue(null, this.options.footerStyle, [column])
+      value = Utils.calculateObjectValue(column, column.footerFormatter,
+        [data, value], value)
 
-      if (style && style.css) {
-        for (const [key, value] of Object.entries(style.css)) {
-          csses.push(`${key}: ${value}`)
-        }
-      }
-      if (style && style.classes) {
-        class_ = Utils.sprintf(' class="%s"', column['class'] ?
-          [column['class'], style.classes].join(' ') : style.classes)
-      }
-
-      html.push('<th', class_, Utils.sprintf(' style="%s"', falign + valign + csses.concat().join('; ')))
-      let colspan = 0
-
-      if (this.footerData && this.footerData.length > 0) {
-        colspan = this.footerData[0][`_${ column.field }_colspan`] || 0
-      }
-      if (colspan) {
-        html.push(` colspan="${colspan}" `)
-      }
-
-      html.push('>')
-      html.push('<div class="th-inner">')
-
-      let value = ''
-
-      if (this.footerData && this.footerData.length > 0) {
-        value = this.footerData[0][column.field] || ''
-      }
-      html.push(Utils.calculateObjectValue(column, column.footerFormatter,
-        [data, value], value))
-
-      html.push('</div>')
-      html.push('<div class="fht-cell"></div>')
-      html.push('</div>')
-      html.push('</th>')
+      html.push(Utils.h('th', {
+        class: [column['class'], style && style.classes],
+        style: {
+          'text-align': column.falign ? column.falign : column.align,
+          'vertical-align': column.valign,
+          ...csses
+        },
+        colspan: colspan || undefined
+      }, [
+        Utils.h('div', {
+          class: 'th-inner'
+        }, [...Utils.htmlToNodes(value)]),
+        Utils.h('div', { class: 'fht-cell' })
+      ]))
     }
 
     if (detailTemplate && this.options.detailViewAlign === 'right') {
@@ -2283,7 +2327,7 @@ class BootstrapTable {
       this.$tableFooter.html('<table><thead><tr></tr></thead></table>')
     }
 
-    this.$tableFooter.find('tr').html(html.join(''))
+    this.$tableFooter.find('tr').html(html)
 
     this.trigger('post-footer', this.$tableFooter)
   }
@@ -2364,7 +2408,7 @@ class BootstrapTable {
     for (const field of this.header.fields) {
       const column = this.columns[this.fieldsColumnsIndex[field]]
 
-      if (!column || !column.visible || (this.options.cardView && !column.cardVisible)) {
+      if (!column || !column.visible || this.options.cardView && !column.cardVisible) {
         continue
       }
       visibleFields.push(field)
@@ -2381,10 +2425,10 @@ class BootstrapTable {
 
   getOptions () {
     // deep copy and remove data
-    const options = $.extend({}, this.options)
+    const options = Utils.extend({}, this.options)
 
     delete options.data
-    return $.extend(true, {}, options)
+    return Utils.extend(true, {}, options)
   }
 
   refreshOptions (options) {
@@ -2392,7 +2436,8 @@ class BootstrapTable {
     if (Utils.compareObjects(this.options, options, true)) {
       return
     }
-    this.options = $.extend(this.options, options)
+    this.optionsColumnsChanged = !!options.columns
+    this.options = Utils.extend(this.options, options)
     this.trigger('refresh-options', this.options)
     this.destroy()
     this.init()
@@ -2415,31 +2460,39 @@ class BootstrapTable {
       data = this.data
     }
 
-    if (params && params.useCurrentPage) {
-      data = data.slice(this.pageFrom - 1, this.pageTo)
-    }
-
     if (params && !params.includeHiddenRows) {
       const hiddenRows = this.getHiddenRows()
 
       data = data.filter(row => Utils.findIndex(hiddenRows, row) === -1)
     }
 
+    if (params && params.useCurrentPage) {
+      data = data.slice(this.pageFrom - 1, this.pageTo)
+    }
+
     if (params && params.formatted) {
-      data.forEach(row => {
+      return data.map(row => {
+        const formattedColumns = {}
+
         for (const [key, value] of Object.entries(row)) {
           const column = this.columns[this.fieldsColumnsIndex[key]]
 
           if (!column) {
-            return
+            continue
           }
 
-          row[key] = Utils.calculateObjectValue(column, this.header.formatters[column.fieldIndex], [value, row, row.index, column.field], value)
+          formattedColumns[key] = Utils.calculateObjectValue(column, this.header.formatters[column.fieldIndex],
+            [value, row, row.index, column.field], value)
         }
+        return formattedColumns
       })
     }
 
     return data
+  }
+
+  getFooterData () {
+    return this.footerData ?? []
   }
 
   getSelections () {
@@ -2458,7 +2511,7 @@ class BootstrapTable {
       this.footerData = data[this.options.footerField] ? [data[this.options.footerField]] : undefined
     }
 
-    fixedScroll = data.fixedScroll
+    fixedScroll = this.options.fixedScroll || data.fixedScroll
     data = Array.isArray(data) ? data : data[this.options.dataField]
 
     this.initData(data)
@@ -2487,10 +2540,10 @@ class BootstrapTable {
     let removed = 0
 
     for (let i = this.options.data.length - 1; i >= 0; i--) {
-
       const row = this.options.data[i]
+      const value = Utils.getItemField(row, params.field, this.options.escape, row.escape)
 
-      if (!row.hasOwnProperty(params.field) && params.field !== '$index') {
+      if (value === undefined && params.field !== '$index') {
         continue
       }
 
@@ -2498,7 +2551,7 @@ class BootstrapTable {
         !row.hasOwnProperty(params.field) &&
         params.field === '$index' &&
         params.values.includes(i) ||
-        params.values.includes(row[params.field])
+        params.values.includes(value)
       ) {
         removed++
 
@@ -2523,6 +2576,7 @@ class BootstrapTable {
 
   removeAll () {
     if (this.options.data.length > 0) {
+      this.data.splice(0, this.data.length)
       this.options.data.splice(0, this.options.data.length)
       this.initSearch()
       this.initPagination()
@@ -2534,7 +2588,16 @@ class BootstrapTable {
     if (!params.hasOwnProperty('index') || !params.hasOwnProperty('row')) {
       return
     }
-    this.options.data.splice(params.index, 0, params.row)
+    const row = this.data[params.index]
+    const originalIndex = this.options.data.indexOf(row)
+
+    if (originalIndex === -1) {
+      this.append([params.row])
+      return
+    }
+
+    this.data.splice(params.index, 0, params.row)
+    this.options.data.splice(originalIndex, 0, params.row)
     this.initSearch()
     this.initPagination()
     this.initSort()
@@ -2548,11 +2611,15 @@ class BootstrapTable {
       if (!params.hasOwnProperty('index') || !params.hasOwnProperty('row')) {
         continue
       }
+      const row = this.data[params.index]
+      const originalIndex = this.options.data.indexOf(row)
 
       if (params.hasOwnProperty('replace') && params.replace) {
-        this.options.data[params.index] = params.row
+        this.data[params.index] = params.row
+        this.options.data[originalIndex] = params.row
       } else {
-        $.extend(this.options.data[params.index], params.row)
+        Utils.extend(this.data[params.index], params.row)
+        Utils.extend(this.options.data[originalIndex], params.row)
       }
     }
 
@@ -2569,26 +2636,22 @@ class BootstrapTable {
     let dataRow = null
     let i
     let row
-    let rowUniqueId
 
     for (i = len - 1; i >= 0; i--) {
       row = this.options.data[i]
+      const rowUniqueId = Utils.getItemField(row, uniqueId, this.options.escape, row.escape)
 
-      if (row.hasOwnProperty(uniqueId)) { // uniqueId is a column
-        rowUniqueId = row[uniqueId]
-      } else if (row._data && row._data.hasOwnProperty(uniqueId)) { // uniqueId is a row data property
-        rowUniqueId = row._data[uniqueId]
-      } else {
+      if (rowUniqueId === undefined) {
         continue
       }
 
       if (typeof rowUniqueId === 'string') {
-        id = id.toString()
+        id = _id.toString()
       } else if (typeof rowUniqueId === 'number') {
-        if ((Number(rowUniqueId) === rowUniqueId) && (rowUniqueId % 1 === 0)) {
-          id = parseInt(id, 10)
-        } else if ((rowUniqueId === Number(rowUniqueId)) && (rowUniqueId !== 0)) {
-          id = parseFloat(id)
+        if (Number(rowUniqueId) === rowUniqueId && rowUniqueId % 1 === 0) {
+          id = parseInt(_id, 10)
+        } else if (rowUniqueId === Number(rowUniqueId) && rowUniqueId !== 0) {
+          id = parseFloat(_id)
         }
       }
 
@@ -2619,7 +2682,7 @@ class BootstrapTable {
       if (params.hasOwnProperty('replace') && params.replace) {
         this.options.data[rowId] = params.row
       } else {
-        $.extend(this.options.data[rowId], params.row)
+        Utils.extend(this.options.data[rowId], params.row)
       }
       updatedUid = params.id
     }
@@ -2652,15 +2715,40 @@ class BootstrapTable {
     this.initBody(true)
   }
 
+  _updateCellOnly (field, index) {
+    const rowHtml = this.initRow(this.data[index], index)
+    let fieldIndex = this.getVisibleFields().indexOf(field)
+
+    if (fieldIndex === -1) {
+      return
+    }
+
+    fieldIndex += Utils.getDetailViewIndexOffset(this.options)
+
+    this.$body.find(`>tr[data-index=${index}]`)
+      .find(`>td:eq(${fieldIndex})`)
+      .replaceWith($(rowHtml).find(`>td:eq(${fieldIndex})`))
+
+    this.initBodyEvent()
+    this.initFooter()
+    this.resetView()
+    this.updateSelected()
+  }
+
   updateCell (params) {
     if (!params.hasOwnProperty('index') ||
       !params.hasOwnProperty('field') ||
       !params.hasOwnProperty('value')) {
       return
     }
+    const row = this.data[params.index]
+    const originalIndex = this.options.data.indexOf(row)
+
     this.data[params.index][params.field] = params.value
+    this.options.data[originalIndex][params.field] = params.value
 
     if (params.reinit === false) {
+      this._updateCellOnly(params.field, params.index)
       return
     }
     this.initSort()
@@ -2671,15 +2759,17 @@ class BootstrapTable {
     const allParams = Array.isArray(params) ? params : [params]
 
     allParams.forEach(({ id, field, value }) => {
-      const rowId = this.options.data.indexOf(this.getRowByUniqueId(id))
+      const index = this.options.data.indexOf(this.getRowByUniqueId(id))
 
-      if (rowId === -1) {
+      if (index === -1) {
         return
       }
-      this.options.data[rowId][field] = value
+      this.options.data[index][field] = value
     })
 
     if (params.reinit === false) {
+      this._updateCellOnly(params.field,
+        this.options.data.indexOf(this.getRowByUniqueId(params.id)))
       return
     }
     this.initSort()
@@ -2755,7 +2845,7 @@ class BootstrapTable {
   }
 
   _toggleColumn (index, checked, needUpdate) {
-    if (index === -1 || this.columns[index].visible === checked) {
+    if (index === undefined || this.columns[index].visible === checked) {
       return
     }
     this.columns[index].visible = checked
@@ -2837,8 +2927,8 @@ class BootstrapTable {
   mergeCells (options) {
     const row = options.index
     let col = this.getVisibleFields().indexOf(options.field)
-    const rowspan = options.rowspan || 1
-    const colspan = options.colspan || 1
+    const rowspan = +options.rowspan || 1
+    const colspan = +options.colspan || 1
     let i
     let j
     const $tr = this.$body.find('>tr[data-index]')
@@ -2998,11 +3088,15 @@ class BootstrapTable {
     if (params && params.pageSize) {
       this.options.pageSize = params.pageSize
     }
-    this.trigger('refresh', this.initServer(params && params.silent,
-      params && params.query, params && params.url))
+    if (params && params.query) {
+      this.options.url = Utils.addQueryToUrl(this.options.url, params.query)
+    }
+
+    this.trigger('refresh', this.initServer(params && params.silent))
   }
 
   destroy () {
+    clearTimeout(this.timeoutId_)
     this.$el.insertBefore(this.$container)
     $(this.options.toolbar).insertBefore(this.$el)
     this.$container.next().remove()
@@ -3010,6 +3104,10 @@ class BootstrapTable {
     this.$el.html(this.$el_.html())
       .css('margin-top', '0')
       .attr('class', this.$el_.attr('class') || '') // reset the class
+
+    const resizeEvent = Utils.getEventName('resize.bootstrap-table', this.$el.attr('id'))
+
+    $(window).off(resizeEvent)
   }
 
   resetView (params) {
@@ -3112,7 +3210,7 @@ class BootstrapTable {
     const text = this.options.showButtonText ? this.options.pagination ? this.options.formatPaginationSwitchUp() : this.options.formatPaginationSwitchDown() : ''
 
     this.$toolbar.find('button[name="paginationSwitch"]')
-      .html(`${Utils.sprintf(this.constants.html.icon, this.options.iconsPrefix, icon) } ${ text}`)
+      .html(`${Utils.sprintf(this.constants.html.icon, this.options.iconsPrefix, icon)} ${text}`)
     this.updatePagination()
     this.trigger('toggle-pagination', this.options.pagination)
   }
@@ -3127,10 +3225,14 @@ class BootstrapTable {
     this.initHeader()
 
     const icon = this.options.showButtonIcons ? this.options.cardView ? this.options.icons.toggleOn : this.options.icons.toggleOff : ''
-    const text = this.options.showButtonText ? this.options.cardView ? this.options.formatToggleOff() : this.options.formatToggleOn() : ''
+    const text = this.options.cardView ? this.options.formatToggleOff() : this.options.formatToggleOn()
 
     this.$toolbar.find('button[name="toggle"]')
-      .html(`${Utils.sprintf(this.constants.html.icon, this.options.iconsPrefix, icon) } ${ text}`)
+      .html(`${Utils.sprintf(this.constants.html.icon, this.options.iconsPrefix,
+        icon)} ${this.options.showButtonText ? text : ''}`)
+      .attr('aria-label', text)
+      .attr(this.options.buttonsAttributeTitle, text)
+
     this.initBody()
     this.trigger('toggle', this.options.cardView)
   }
@@ -3146,7 +3248,8 @@ class BootstrapTable {
   }
 
   filterBy (columns, options) {
-    this.filterOptions = Utils.isEmptyObject(options) ? this.options.filterOptions : $.extend(this.options.filterOptions, options)
+    this.filterOptions = Utils.isEmptyObject(options) ? this.options.filterOptions :
+      Utils.extend({}, this.options.filterOptions, options)
     this.filterColumns = Utils.isEmptyObject(columns) ? {} : columns
     this.options.pageNumber = 1
     this.initSearch()
@@ -3297,12 +3400,12 @@ class BootstrapTable {
     }
 
     this.columns[this.fieldsColumnsIndex[params.field]].title =
-      this.options.escape ? Utils.escapeHTML(params.title) : params.title
+      this.options.escape && this.options.escapeTitle ? Utils.escapeHTML(params.title) : params.title
 
     if (this.columns[this.fieldsColumnsIndex[params.field]].visible) {
       this.$header.find('th[data-field]').each((i, el) => {
         if ($(el).data('field') === params.field) {
-          $($(el).find('.th-inner')[0]).text(params.title)
+          $($(el).find('.th-inner')[0]).html(params.title)
           return false
         }
       })
@@ -3342,8 +3445,6 @@ $.fn.bootstrapTable = function (option, ...args) {
 
   this.each((i, el) => {
     let data = $(el).data('bootstrap.table')
-    const options = $.extend({}, BootstrapTable.DEFAULTS, $(el).data(),
-      typeof option === 'object' && option)
 
     if (typeof option === 'string') {
       if (!Constants.METHODS.includes(option)) {
@@ -3359,13 +3460,20 @@ $.fn.bootstrapTable = function (option, ...args) {
       if (option === 'destroy') {
         $(el).removeData('bootstrap.table')
       }
+      return
     }
 
-    if (!data) {
-      data = new $.BootstrapTable(el, options)
-      $(el).data('bootstrap.table', data)
-      data.init()
+    if (data) {
+      console.warn('You cannot initialize the table more than once!')
+      return
     }
+
+    const options = Utils.extend(true, {}, BootstrapTable.DEFAULTS, $(el).data(),
+      typeof option === 'object' && option)
+
+    data = new $.BootstrapTable(el, options)
+    $(el).data('bootstrap.table', data)
+    data.init()
   })
 
   return typeof value === 'undefined' ? this : value

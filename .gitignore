@@ -16,13 +16,13 @@ src/**/*.css.map
 docs_
 
 # check the locale file on README
-check.js
+release.*
 
 # Common IDE files
 nbproject
 .~lock.*
+Gemfile.lock
 package-lock.json
-*.lock
 .buildpath
 .idea
 .project

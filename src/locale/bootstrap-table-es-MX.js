@@ -59,9 +59,6 @@ $.fn.bootstrapTable.locales['es-MX'] = {
   formatRefresh () {
     return 'Actualizar'
   },
-  formatToggle () {
-    return 'Cambiar vista'
-  },
   formatToggleOn () {
     return 'Mostrar vista'
   },
@@ -106,4 +103,4 @@ $.fn.bootstrapTable.locales['es-MX'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['es-MX'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['es-MX'])

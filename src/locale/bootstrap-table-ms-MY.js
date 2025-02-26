@@ -56,9 +56,6 @@ $.fn.bootstrapTable.locales['ms-MY'] = $.fn.bootstrapTable.locales['ms'] = {
   formatRefresh () {
     return 'Muatsemula'
   },
-  formatToggle () {
-    return 'Tukar'
-  },
   formatToggleOn () {
     return 'Show card view'
   },
@@ -103,4 +100,4 @@ $.fn.bootstrapTable.locales['ms-MY'] = $.fn.bootstrapTable.locales['ms'] = {
   }
 }
 
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ms-MY'])
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ms-MY'])

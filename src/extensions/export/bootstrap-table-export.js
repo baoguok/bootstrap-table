@@ -19,28 +19,20 @@ const TYPE_NAME = {
   pdf: 'PDF'
 }
 
-$.extend($.fn.bootstrapTable.defaults, {
+Object.assign($.fn.bootstrapTable.defaults, {
   showExport: false,
   exportDataType: 'basic', // basic, all, selected
   exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel'],
-  exportOptions: {
-    onCellHtmlData (cell, rowIndex, colIndex, htmlData) {
-      if (cell.is('th')) {
-        return cell.find('.th-inner').text()
-      }
-
-      return htmlData
-    }
-  },
+  exportOptions: {},
   exportFooter: false
 })
 
-$.extend($.fn.bootstrapTable.columnDefaults, {
+Object.assign($.fn.bootstrapTable.columnDefaults, {
   forceExport: false,
   forceHide: false
 })
 
-$.extend($.fn.bootstrapTable.defaults.icons, {
+Object.assign($.fn.bootstrapTable.defaults.icons, {
   export: {
     bootstrap3: 'glyphicon-export icon-share',
     bootstrap5: 'bi-download',
@@ -49,24 +41,28 @@ $.extend($.fn.bootstrapTable.defaults.icons, {
   }[$.fn.bootstrapTable.theme] || 'fa-download'
 })
 
-$.extend($.fn.bootstrapTable.locales, {
+Object.assign($.fn.bootstrapTable.locales, {
   formatExport () {
     return 'Export data'
   }
 })
-$.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales)
+Object.assign($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales)
 
 $.fn.bootstrapTable.methods.push('exportTable')
 
-$.extend($.fn.bootstrapTable.defaults, {
+Object.assign($.fn.bootstrapTable.defaults, {
   // eslint-disable-next-line no-unused-vars
   onExportSaved (exportedRows) {
+    return false
+  },
+  onExportStarted () {
     return false
   }
 })
 
-$.extend($.fn.bootstrapTable.Constructor.EVENTS, {
-  'export-saved.bs.table': 'onExportSaved'
+Object.assign($.fn.bootstrapTable.events, {
+  'export-saved.bs.table': 'onExportSaved',
+  'export-started.bs.table': 'onExportStarted'
 })
 
 $.BootstrapTable = class extends $.BootstrapTable {
@@ -97,13 +93,13 @@ $.BootstrapTable = class extends $.BootstrapTable {
       this.buttons = Object.assign(this.buttons, {
         export: {
           html:
-            (() => {
+            () => {
               if (exportTypes.length === 1) {
                 return `
                   <div class="export ${this.constants.classes.buttonsDropdown}"
                   data-type="${exportTypes[0]}">
                   <button class="${this.constants.buttonsClass}"
-                  aria-label="Export"
+                  aria-label="${o.formatExport()}"
                   type="button"
                   title="${o.formatExport()}">
                   ${o.showButtonIcons ? Utils.sprintf(this.constants.html.icon, o.iconsPrefix, o.icons.export) : ''}
@@ -118,7 +114,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
               html.push(`
                 <div class="export ${this.constants.classes.buttonsDropdown}">
                 <button class="${this.constants.buttonsClass} dropdown-toggle"
-                aria-label="Export"
+                aria-label="${o.formatExport()}"
                 ${this.constants.dataToggle}="dropdown"
                 type="button"
                 title="${o.formatExport()}">
@@ -140,7 +136,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
               html.push(this.constants.html.toolbarDropdown[1], '</div>')
               return html.join('')
-            })
+            }
         }
       })
     }
@@ -161,14 +157,10 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
     $exportButtons.click(e => {
       e.preventDefault()
-
-      const type = $(e.currentTarget).data('type')
-      const exportOptions = {
-        type,
-        escape: false
-      }
-
-      this.exportTable(exportOptions)
+      this.trigger('export-started')
+      this.exportTable({
+        type: $(e.currentTarget).data('type')
+      })
     })
     this.handleToolbar()
   }
@@ -210,12 +202,12 @@ $.BootstrapTable = class extends $.BootstrapTable {
         o.exportOptions.ignoreColumn = [detailViewIndex].concat(o.exportOptions.ignoreColumn || [])
       }
 
-      if (o.exportFooter) {
+      if (o.exportFooter && o.height) {
         const $footerRow = this.$tableFooter.find('tr').first()
         const footerData = {}
         const footerHtml = []
 
-        $.each($footerRow.children(), (index, footerCell) => {
+        $footerRow.children().forEach((footerCell, index) => {
           const footerCellHtml = $(footerCell).children('.th-inner').first().html()
 
           footerData[this.columns[index].field] = footerCellHtml === '&nbsp;' ? null : footerCellHtml
@@ -227,7 +219,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
         this.$body.append(this.$body.children().last()[0].outerHTML)
         const $lastTableRow = this.$body.children().last()
 
-        $.each($lastTableRow.children(), (index, lastTableRowCell) => {
+        $lastTableRow.children().forEach((lastTableRowCell, index) => {
           $(lastTableRowCell).html(footerHtml[index])
         })
       }
@@ -244,7 +236,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
         options.fileName = o.exportOptions.fileName()
       }
 
-      this.$el.tableExport($.extend({
+      this.$el.tableExport(Utils.extend({
         onAfterSaveToFile: () => {
           if (o.exportFooter) {
             this.load(data)
@@ -281,15 +273,17 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
       this.$el.one(eventName, () => {
         setTimeout(() => {
+          const data = this.getData()
+
           doExport(() => {
             this.options.virtualScroll = virtualScroll
             this.togglePagination()
           })
+          this.trigger('export-saved', data)
         }, 0)
       })
       this.options.virtualScroll = false
       this.togglePagination()
-      this.trigger('export-saved', this.getData())
     } else if (o.exportDataType === 'selected') {
       let data = this.getData()
       let selectedData = this.getSelections()
